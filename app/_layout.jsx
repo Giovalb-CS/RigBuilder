@@ -1,11 +1,67 @@
-import { Stack } from 'expo-router';
+import React, { useState, useEffect } from "react";
+import { Stack } from "expo-router";
+import { StatusBar, Text, View, ActivityIndicator } from "react-native";
+import Colors from "../constants/Colors";
+import EllipsisVertical from "../components/EllipsisVertical";
+import { MenuProvider } from "react-native-popup-menu";
+import * as Font from "expo-font";
 
 export default function RootLayout() {
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadFonts = async () => {
+      await Font.loadAsync({
+        RigBuilderFont: require("../assets/fonts/static/Teachers-Regular.ttf"),
+        RigBuilderFontBold: require("../assets/fonts/static/Teachers-Bold.ttf"),
+      });
+      setFontsLoaded(true);
+    };
+
+    loadFonts();
+  }, []);
+
+  if (!fontsLoaded) {
     return (
-        <Stack>
-            <Stack.Screen name="index" options={{ title: 'Home' }} />
-            <Stack.Screen name="about" options={{ title: 'About Us' }} />
-            <Stack.Screen name="details" options={{ title: 'Details' }} />
-        </Stack>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={Colors.dark.text} />
+      </View>
     );
+  }
+
+  // Sovrascrivi lo stile predefinito di Text
+  Text.defaultProps = {
+    ...(Text.defaultProps || {}),
+    style: [{ fontFamily: "RigBuilderFont" }, Text.defaultProps?.style],
+  };
+
+  return (
+    <MenuProvider>
+      <StatusBar
+        barStyle={"light-content"}
+        backgroundColor={Colors.dark.background}
+      />
+      <Stack>
+        <Stack.Screen
+          name="index"
+          options={{
+            title: "Home",
+            headerRight: () => <EllipsisVertical />,
+            headerStyle: { backgroundColor: Colors.dark.background },
+            headerTintColor: Colors.dark.text,
+            headerTitleStyle: { fontFamily: "RigBuilderFontBold" },
+          }}
+        />
+        <Stack.Screen
+          name="about"
+          options={{
+            title: "About Us",
+            headerStyle: { backgroundColor: Colors.dark.background },
+            headerTintColor: Colors.dark.text,
+            headerTitleStyle: { fontFamily: "RigBuilderFontBold" },
+          }}
+        />
+      </Stack>
+    </MenuProvider>
+  );
 }
