@@ -33,18 +33,28 @@ const EllipsisVertical = () => {
 
   return (
     <>
-      <FontAwesome5
-        name="ellipsis-v"
-        size={24}
-        color={Colors.dark.text}
-        onPress={toggleMenu}
-        style={{ marginRight: 5 }}
-      />
+      <TouchableOpacity
+        style={{
+          paddingRight: 20,
+          paddingLeft: 30,
+          paddingVertical: 10,
+          zIndex: 10, // Aumenta il livello sopra gli altri componenti
+        }}
+        onPressIn={() => {
+          console.log("Ellipsis icon pressed!");
+          toggleMenu();
+        }}
+      >
+        <FontAwesome5 name="ellipsis-v" size={24} color={Colors.dark.text} />
+      </TouchableOpacity>
       <Modal
         transparent={true}
         visible={visible}
         animationType="fade"
         onRequestClose={toggleMenu}
+        onShow={() => {
+          console.log("Modal is now visible!");
+        }}
       >
         <TouchableOpacity style={styles.overlay} onPress={toggleMenu}>
           <View style={styles.menu}>
@@ -63,7 +73,7 @@ const EllipsisVertical = () => {
                 toggleMenu();
                 showAlert("Backup", "Backup function coming soon...", [
                   {
-                    label: "Ok",
+                    label: "OK",
                     onPress: () => console.log("Backup OK"),
                   },
                 ]);

@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   buttonText: {
-    color: "white",
+    color: Colors.theme.white,
     fontSize: 16,
     fontWeight: "bold",
-    fontFamily: "RigBuilderFont",
+    fontFamily: "RigBuilderFontBold",
   },
 });
 

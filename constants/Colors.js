@@ -20,7 +20,7 @@ export default {
     white: '#fffcf2',
     lightGrey: '#CCC5B921',
     grey: '#403D3977',
-    darkgrey: '#1a1818',
+    darkgrey: '#252525',
     orange: '#eb5e28',
   },
   popup: {

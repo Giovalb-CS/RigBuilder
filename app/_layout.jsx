@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Stack } from "expo-router";
-import { StatusBar, Text, View, ActivityIndicator } from "react-native";
+import {
+  StatusBar,
+  Text,
+  View,
+  ActivityIndicator,
+  SafeAreaView,
+} from "react-native";
 import Colors from "../constants/Colors";
 import EllipsisVertical from "../components/EllipsisVertical";
 import { MenuProvider } from "react-native-popup-menu";
@@ -23,16 +29,38 @@ export default function RootLayout() {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color={Colors.dark.text} />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: Colors.theme.darkgrey,
+        }}
+      >
+        <ActivityIndicator size="large" color={Colors.theme.orange} />
       </View>
     );
   }
 
-  // Sovrascrivi lo stile predefinito di Text
+  // Sovrascrivi gli stili predefiniti di components
   Text.defaultProps = {
     ...(Text.defaultProps || {}),
-    style: [{ fontFamily: "RigBuilderFont" }, Text.defaultProps?.style],
+    style: [
+      { fontFamily: "RigBuilderFont", color: Colors.dark.text },
+      Text.defaultProps?.style,
+    ],
+  };
+  ActivityIndicator.defaultProps = {
+    ...(ActivityIndicator.defaultProps || {}),
+    color: Colors.theme.orange,
+    size: "large",
+  };
+  SafeAreaView.defaultProps = {
+    ...(SafeAreaView.defaultProps || {}),
+    style: [
+      { fontFamily: "RigBuilderFont", color: Colors.dark.text },
+      SafeAreaView.defaultProps?.style,
+    ],
   };
 
   return (
