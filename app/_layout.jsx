@@ -6,6 +6,8 @@ import {
   View,
   ActivityIndicator,
   SafeAreaView,
+  Image,
+  StyleSheet,
 } from "react-native";
 import Colors from "../constants/Colors";
 import EllipsisVertical from "../components/EllipsisVertical";
@@ -73,7 +75,15 @@ export default function RootLayout() {
         <Stack.Screen
           name="index"
           options={{
-            title: "Home",
+            headerTitle: () => (
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../assets/images/RigBuilder_Logo_horizontal.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+            ),
             headerRight: () => <EllipsisVertical />,
             headerStyle: { backgroundColor: Colors.dark.background },
             headerTintColor: Colors.dark.text,
@@ -93,3 +103,8 @@ export default function RootLayout() {
     </MenuProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  logoContainer: { alignItems: "left", justifyContent: "center" },
+  logo: { width: 150, height: 50 },
+});

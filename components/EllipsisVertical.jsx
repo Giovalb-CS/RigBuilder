@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   menu: {
     backgroundColor: "#757575e3",
-    borderColor: "#ffffff62",
+    borderColor: "#ffffffc9",
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,

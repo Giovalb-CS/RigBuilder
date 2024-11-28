@@ -25,7 +25,7 @@ export default {
   },
   popup: {
     background: '#757575e3',
-    border: '#ffffff62',
+    border: '#ffffffc9',
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
