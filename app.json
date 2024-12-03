@@ -17,6 +17,7 @@
       "supportsTablet": true
     },
     "android": {
+      "navigationBarColor": "#252525",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/RigBuilder_Logo.png",
         "backgroundColor": "#000000"

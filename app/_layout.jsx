@@ -8,11 +8,19 @@ import {
   SafeAreaView,
   Image,
   StyleSheet,
+  TextInput,
+  Button,
+  Switch,
 } from "react-native";
 import Colors from "../constants/Colors";
 import EllipsisVertical from "../components/EllipsisVertical";
 import { MenuProvider } from "react-native-popup-menu";
 import * as Font from "expo-font";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 
 export default function RootLayout() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -64,43 +72,95 @@ export default function RootLayout() {
       SafeAreaView.defaultProps?.style,
     ],
   };
+  TextInput.defaultProps = {
+    ...(TextInput.defaultProps || {}),
+    style: [
+      {
+        fontFamily: "RigBuilderFont",
+        color: Colors.dark.text,
+        backgroundColor: Colors.dark.background,
+        borderColor: Colors.theme.orange,
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 10,
+      },
+      TextInput.defaultProps?.style,
+    ],
+    placeholderTextColor: Colors.dark.text + "80", // 50% opacity
+  };
+  Button.defaultProps = {
+    ...(Button.defaultProps || {}),
+    color: Colors.theme.orange,
+  };
+  Switch.defaultProps = {
+    ...(Switch.defaultProps || {}),
+    trackColor: {
+      false: Colors.dark.background,
+      true: Colors.theme.orange,
+    },
+    thumbColor: Colors.dark.text,
+  };
+
+  const CustomDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: Colors.theme.darkgrey,
+      card: Colors.dark.background,
+      text: Colors.dark.text,
+      border: Colors.theme.orange,
+    },
+  };
 
   return (
-    <MenuProvider>
-      <StatusBar
-        barStyle={"light-content"}
-        backgroundColor={Colors.dark.background}
-      />
-      <Stack>
-        <Stack.Screen
-          name="index"
-          options={{
-            headerTitle: () => (
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require("../assets/images/RigBuilder_Logo_horizontal.png")}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-            ),
-            headerRight: () => <EllipsisVertical />,
-            headerStyle: { backgroundColor: Colors.dark.background },
-            headerTintColor: Colors.dark.text,
-            headerTitleStyle: { fontFamily: "RigBuilderFontBold" },
-          }}
+    <ThemeProvider value={CustomDarkTheme}>
+      <MenuProvider>
+        <StatusBar
+          barStyle={"light-content"}
+          backgroundColor={Colors.dark.background}
         />
-        <Stack.Screen
-          name="about"
-          options={{
-            title: "About Us",
-            headerStyle: { backgroundColor: Colors.dark.background },
-            headerTintColor: Colors.dark.text,
-            headerTitleStyle: { fontFamily: "RigBuilderFontBold" },
+        <Stack
+          screenOptions={{
+            headerShown: true,
+            cardStyle: { backgroundColor: Colors.theme.darkgrey, flex: 1 },
           }}
-        />
-      </Stack>
-    </MenuProvider>
+        >
+          <Stack.Screen
+            name="index"
+            options={{
+              headerTitle: () => (
+                <View style={styles.logoContainer}>
+                  <Image
+                    source={require("../assets/images/RigBuilder_Logo_horizontal.png")}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                </View>
+              ),
+              headerRight: () => <EllipsisVertical />,
+              headerStyle: { backgroundColor: Colors.dark.background },
+              headerTintColor: Colors.dark.text,
+              headerTitleStyle: { fontFamily: "RigBuilderFontBold" },
+            }}
+          />
+          <Stack.Screen
+            name="about"
+            options={{
+              title: "About RigBuilder",
+              headerStyle: { backgroundColor: Colors.dark.background },
+              headerTintColor: Colors.dark.text,
+              headerTitleStyle: { fontFamily: "RigBuilderFontBold" },
+            }}
+          />
+          <Stack.Screen
+            name="(parts)"
+            options={{
+              headerShown: false,
+            }}
+          />
+        </Stack>
+      </MenuProvider>
+    </ThemeProvider>
   );
 }
 

@@ -38,7 +38,7 @@ const EllipsisVertical = () => {
           paddingRight: 20,
           paddingLeft: 30,
           paddingVertical: 10,
-          zIndex: 10, // Aumenta il livello sopra gli altri componenti
+          zIndex: 10,
         }}
         onPressIn={() => {
           console.log("Ellipsis icon pressed!");
