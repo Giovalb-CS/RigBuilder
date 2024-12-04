@@ -12,13 +12,7 @@ import { useRouter } from "expo-router";
 import Colors from "../../constants/Colors";
 import AnimatedIconButton from "../../components/AnimatedIconButton";
 import { LinearGradient } from "expo-linear-gradient";
-
-const PartsButton = ({ title, icon, onPress }) => (
-  <Pressable style={styles.partsButton} onPress={onPress}>
-    <Image source={icon} style={styles.icon} resizeMode="contain" />
-    <Text style={styles.buttonText}>{title}</Text>
-  </Pressable>
-);
+import PartsButton from "../../components/PartsButton";
 
 const parts = [
   {

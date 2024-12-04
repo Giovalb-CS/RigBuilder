@@ -3,7 +3,7 @@
     "name": "RigBuilder",
     "slug": "RigBuilder",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/RigBuilder_Logo_OS.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
@@ -21,7 +21,14 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/RigBuilder_Logo.png",
         "backgroundColor": "#000000"
-      }
+      },
+      "softwareKeyboardLayoutMode": "pan",
+      "configChanges": [
+        "keyboard",
+        "keyboardHidden",
+        "orientation",
+        "screenSize"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -36,8 +43,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_URL": "http://192.168.1.9:8081/RigBuilder_webapp_project_war_exploded/api",
-      "API_KEY": "ApiKeyProva123"
+      "API_URL": "http://192.168.1.9:8080/RigBuilder_webapp_project_war_exploded/api",
+      "API_KEY": "1P9N112129"
     }
   }
 }

@@ -11,6 +11,7 @@ import {
   TextInput,
   Button,
   Switch,
+  useWindowDimensions,
 } from "react-native";
 import Colors from "../constants/Colors";
 import EllipsisVertical from "../components/EllipsisVertical";
@@ -24,6 +25,8 @@ import {
 
 export default function RootLayout() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -112,6 +115,15 @@ export default function RootLayout() {
     },
   };
 
+  const styles = StyleSheet.create({
+    logoContainer: {
+      alignItems: "left",
+      justifyContent: "center",
+      width: isLandscape ? "30%" : 150,
+    },
+    logo: { width: isLandscape ? "100%" : 150, height: 50 },
+  });
+
   return (
     <ThemeProvider value={CustomDarkTheme}>
       <MenuProvider>
@@ -163,8 +175,3 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  logoContainer: { alignItems: "left", justifyContent: "center" },
-  logo: { width: 150, height: 50 },
-});

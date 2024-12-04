@@ -6,7 +6,7 @@ import { MenuProvider } from "react-native-popup-menu";
 
 export default function ConfiguratorLayout() {
   return (
-    <MenuProvider>
+    <>
       <Stack
         screenOptions={{
           cardStyle: { backgroundColor: Colors.theme.darkgrey, flex: 1 },
@@ -21,7 +21,13 @@ export default function ConfiguratorLayout() {
             headerTitleStyle: { fontFamily: "RigBuilderFontBold" },
           }}
         />
+        <Stack.Screen
+          name="(cpu)"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
-    </MenuProvider>
+    </>
   );
 }
