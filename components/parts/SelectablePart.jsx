@@ -6,9 +6,11 @@ import {
   View,
   Image,
   useWindowDimensions,
+  Linking,
 } from "react-native";
 import Colors from "../../constants/Colors";
 import AnimatedIconButton from "../AnimatedIconButton";
+import StarRating from "../StarRating";
 
 export default function SelectablePart({ part }) {
   const { width, height } = useWindowDimensions();
@@ -33,7 +35,7 @@ export default function SelectablePart({ part }) {
             resizeMode="contain"
           />
         </View>
-        <View style={styles.infoContainer}>
+        <View style={styles.nameContainer}>
           <Text style={styles.label}>Name</Text>
           <Text style={styles.partText}>
             {part.name.length > (isLandscape ? 40 : 60)
@@ -49,11 +51,89 @@ export default function SelectablePart({ part }) {
           style={[dynamicStyles.button, { borderRadius: 10 }]}
         />
       </View>
+      <View style={styles.bottomContainer}>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Rating</Text>
+          <StarRating rating={part.rating} />
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Price</Text>
+          <Text style={styles.partText}>€{part.price}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>URL</Text>
+          <Text
+            style={[styles.partText, styles.link]}
+            onPress={() => Linking.openURL(part.shop_URL)}
+          >
+            Link
+          </Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>TDP</Text>
+          <Text style={styles.partText}>{part.tdp}W</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Socket</Text>
+          <Text style={styles.partText}>{part.socket}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>RAM Type</Text>
+          <Text style={styles.partText}>{part.ram_type}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Cores</Text>
+          <Text style={styles.partText}>{part.core}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Threads</Text>
+          <Text style={styles.partText}>{part.thread}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Base Clock</Text>
+          <Text style={styles.partText}>{part.clock_base}GHz</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Boost Clock</Text>
+          <Text style={styles.partText}>{part.clock_boost}GHz</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Cache</Text>
+          <Text style={styles.partText}>{part.cache}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Scale</Text>
+          <Text style={styles.partText}>{part.scale}nm</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Generation</Text>
+          <Text style={styles.partText}>{part.generation}</Text>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  infoContainer: {
+    flexGrow: 1,
+    flexShrink: 1,
+    borderWidth: 1.3,
+    borderColor: "#757575ff",
+    borderRadius: 10,
+    padding: 3,
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  link: {
+    textDecorationLine: "underline",
+  },
+  bottomContainer: {
+    flex: 1,
+    gap: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
   label: {
     textAlign: "center",
     color: Colors.theme.orange,
@@ -78,8 +158,9 @@ const styles = StyleSheet.create({
     margin: 5,
     borderRadius: 10,
     flexDirection: "column",
+    rowGap: 8,
   },
-  infoContainer: {
+  nameContainer: {
     flexBasis: "55%",
     flexGrow: 1,
     flexShrink: 1,

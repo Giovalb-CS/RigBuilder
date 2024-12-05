@@ -1,16 +1,36 @@
-import React, { useState, useEffect } from "react"; // Add useState import
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  ActivityIndicator,
+  useWindowDimensions,
+  Animated,
+} from "react-native";
 import { useRouter } from "expo-router";
 import Colors from "../../../constants/Colors";
 import Constants from "expo-constants";
 import SelectablePart from "../../../components/parts/SelectablePart";
 import { LinearGradient } from "expo-linear-gradient";
+import AnimatedIconButton from "../../../components/AnimatedIconButton";
 
 export default function CPUScreen() {
   const { API_URL, API_KEY } = Constants.expoConfig.extra;
   const [cpus, setCPUs] = useState(null);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const scrollViewRef = useRef(null);
+  const scrollY = new Animated.Value(0);
+
+  const buttonOpacity = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
 
   const getCPU = async () => {
     try {
@@ -42,17 +62,39 @@ export default function CPUScreen() {
     <SafeAreaView style={[commonStyles.safeAreaView, { position: "relative" }]}>
       <View style={styles.container}>
         <ScrollView
+          ref={scrollViewRef}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
         >
           {error ? (
             <Text style={styles.error}>Error: {error}</Text>
           ) : cpus ? (
             cpus.map((cpu, index) => <SelectablePart key={index} part={cpu} />)
           ) : (
-            <Text>Loading CPU data...</Text>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.theme.orange} />
+              <Text style={styles.loadingText}>Loading CPU data...</Text>
+            </View>
           )}
         </ScrollView>
+        <Animated.View
+          style={[styles.scrollTopButton, { opacity: buttonOpacity }]}
+        >
+          <AnimatedIconButton
+            iconFamily="FontAwesome5"
+            iconName="arrow-alt-circle-up"
+            buttonText=""
+            onPress={() => {
+              scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+            }}
+            style={{ borderRadius: 10 }}
+          />
+        </Animated.View>
         <LinearGradient
           colors={[Colors.theme.darkgrey, "transparent"]}
           style={styles.topFade}
@@ -69,6 +111,12 @@ export default function CPUScreen() {
 }
 
 const styles = StyleSheet.create({
+  scrollTopButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    zIndex: 2,
+  },
   error: {
     color: "red",
     marginTop: 10,
@@ -99,6 +147,16 @@ const styles = StyleSheet.create({
     right: 0,
     height: 40,
     zIndex: 2,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 200,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: Colors.dark.text,
   },
 });
 
