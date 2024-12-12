@@ -8,13 +8,16 @@ import {
   useWindowDimensions,
   Linking,
 } from "react-native";
+import { useRouter } from "expo-router";
 import Colors from "../../constants/Colors";
 import AnimatedIconButton from "../AnimatedIconButton";
 import StarRating from "../StarRating";
+import EventEmitter from "../../utils/EventEmitter";
 
 export default function SelectablePart({ part }) {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
+  const router = useRouter();
 
   const dynamicStyles = StyleSheet.create({
     topContainer: {
@@ -24,6 +27,11 @@ export default function SelectablePart({ part }) {
       flexBasis: isLandscape ? "13%" : "10%",
     },
   });
+
+  const handleSelectCPU = (part) => {
+    EventEmitter.emit("cpuSelected", part);
+    router.back();
+  };
 
   return (
     <View style={styles.part}>
@@ -47,7 +55,7 @@ export default function SelectablePart({ part }) {
           iconFamily="Octicons"
           iconName="diff-added"
           buttonText=""
-          onPress={() => {}}
+          onPress={() => handleSelectCPU(part)}
           style={[dynamicStyles.button, { borderRadius: 10 }]}
         />
       </View>

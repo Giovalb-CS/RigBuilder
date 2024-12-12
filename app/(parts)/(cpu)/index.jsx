@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 import {
-  SafeAreaView,
   ScrollView,
+  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -19,6 +19,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import ScrollToTopButton from "../../../components/ScrollToTopButton";
 import AnimatedIconButton from "../../../components/AnimatedIconButton";
 import { Picker } from "@react-native-picker/picker";
+import { AnimatedFlashList } from "@shopify/flash-list";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 export default function CPUScreen() {
   const { API_URL, API_KEY } = Constants.expoConfig.extra;
@@ -50,12 +52,6 @@ export default function CPUScreen() {
       useNativeDriver: false,
     }).start();
   };
-
-  const buttonOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
 
   const getCPU = async () => {
     try {
@@ -138,12 +134,12 @@ export default function CPUScreen() {
     try {
       setCPUs(null);
       const filters = {
-        minPrice: minPrice !== "" ? parseFloat(minPrice) : null,
-        maxPrice: maxPrice !== "" ? parseFloat(maxPrice) : null,
-        socket: selectedSocket,
-        ramType: selectedRamType,
-        minRating: minRating !== "" ? parseFloat(minRating) : null,
-        maxRating: maxRating !== "" ? parseFloat(maxRating) : null,
+        ...(minPrice && { minPrice }),
+        ...(maxPrice && { maxPrice }),
+        ...(selectedSocket && { socket: selectedSocket }),
+        ...(selectedRamType && { ramType: selectedRamType }),
+        ...(minRating && { minRating }),
+        ...(maxRating && { maxRating }),
       };
 
       const response = await fetch(API_URL + "/processors/filters", {
@@ -175,318 +171,338 @@ export default function CPUScreen() {
     setSelectedRamType("");
     setMinRating("");
     setMaxRating("");
-    toggleFilters();
-    getCPU(); // Re-fetch all data
+    getCPU().then(() => {
+      toggleFilters();
+    });
   };
+
+  function header() {
+    return (
+      <>
+        <View style={styles.filterToggleContainer}>
+          <AnimatedIconButton
+            iconFamily="FontAwesome5"
+            iconName={showFilters ? "chevron-up" : "chevron-down"}
+            buttonText="Filters"
+            iconSize={14}
+            initialBackgroundColor="#ffffff00"
+            initialBorderColor="#ffffff4d"
+            initialElevation={0}
+            onPress={() => toggleFilters()}
+            style={styles.filterToggle}
+          />
+        </View>
+        <Animated.View
+          style={[
+            styles.filterContainer,
+            {
+              maxHeight: filterHeight.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 1000],
+              }),
+              opacity: filterHeight,
+              overflow: "hidden",
+            },
+          ]}
+        >
+          <Text style={[styles.filterLabel, { width: "100%" }]}>
+            Normal Search:
+          </Text>
+          {/* Name Search */}
+          <View style={[{ width: "100%" }, styles.filterSection]}>
+            <TextInput
+              cursorColor={Colors.theme.orange}
+              placeholder="Enter a cpu brand or model"
+              value={nameFilter}
+              onChangeText={setNameFilter}
+              style={[
+                styles.input,
+                focusedInput === "name" && {
+                  borderColor: Colors.theme.orange,
+                },
+              ]}
+              onPressIn={() => setFocusedInput("name")}
+              onEndEditing={() => setFocusedInput(null)}
+              placeholderTextColor={
+                focusedInput === "name" ? Colors.theme.white : "#ffffff4d"
+              }
+            />
+            <AnimatedIconButton
+              iconFamily="FontAwesome5"
+              iconName="search"
+              buttonText="Search by name"
+              iconSize={14}
+              initialBackgroundColor="#ffffff00"
+              initialElevation={0}
+              initialBorderColor="#ffffff4d"
+              onPress={handleNameSearch}
+              style={styles.searchButton}
+            />
+          </View>
+
+          {/* Sort Buttons */}
+          <View style={styles.filterSection}>
+            <Text style={styles.filterLabel}>Price Sort:</Text>
+            <View style={styles.buttonGroup}>
+              <AnimatedIconButton
+                iconFamily="FontAwesome5"
+                iconName="sort-amount-up"
+                buttonText="Asc"
+                iconSize={14}
+                initialBackgroundColor="#ffffff00"
+                initialBorderColor="#ffffff4d"
+                initialElevation={0}
+                onPress={() => handleSortChange("price", "asc")}
+                style={[{ width: 70 }, styles.sortButton]}
+              />
+              <AnimatedIconButton
+                iconFamily="FontAwesome5"
+                iconName="sort-amount-down"
+                buttonText="Desc"
+                iconSize={14}
+                initialBackgroundColor="#ffffff00"
+                initialBorderColor="#ffffff4d"
+                initialElevation={0}
+                onPress={() => handleSortChange("price", "desc")}
+                style={[{ width: 70 }, styles.sortButton]}
+              />
+            </View>
+          </View>
+
+          <View style={styles.filterSection}>
+            <Text style={styles.filterLabel}>Rating Sort:</Text>
+            <View style={styles.buttonGroup}>
+              <AnimatedIconButton
+                iconFamily="FontAwesome5"
+                iconName="sort-amount-up"
+                buttonText="Asc"
+                iconSize={14}
+                initialBackgroundColor="#ffffff00"
+                initialBorderColor="#ffffff4d"
+                initialElevation={0}
+                onPress={() => handleSortChange("rating", "asc")}
+                style={[{ width: 70 }, styles.sortButton]}
+              />
+              <AnimatedIconButton
+                iconFamily="FontAwesome5"
+                iconName="sort-amount-down"
+                buttonText="Desc"
+                iconSize={14}
+                initialBackgroundColor="#ffffff00"
+                initialBorderColor="#ffffff4d"
+                initialElevation={0}
+                onPress={() => handleSortChange("rating", "desc")}
+                style={[{ width: 70 }, styles.sortButton]}
+              />
+            </View>
+          </View>
+
+          {/* Advanced Search Form */}
+          <View style={[{ width: "100%" }, styles.advancedFilterSection]}>
+            <Text
+              style={[styles.filterLabel, { width: "100%", marginBottom: 8 }]}
+            >
+              Advanced Search:
+            </Text>
+            <View style={styles.advancedForm}>
+              <TextInput
+                cursorColor={Colors.theme.orange}
+                placeholder="Min Price"
+                value={minPrice}
+                onChangeText={setMinPrice}
+                keyboardType="numeric"
+                style={[
+                  styles.input,
+                  focusedInput === "minPrice" && {
+                    borderColor: Colors.theme.orange,
+                  },
+                ]}
+                onPressIn={() => setFocusedInput("minPrice")}
+                onEndEditing={() => setFocusedInput(null)}
+                placeholderTextColor={
+                  focusedInput === "minPrice" ? Colors.theme.white : "#ffffff4d"
+                }
+              />
+              <TextInput
+                cursorColor={Colors.theme.orange}
+                placeholder="Max Price"
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+                keyboardType="numeric"
+                style={[
+                  styles.input,
+                  focusedInput === "maxPrice" && {
+                    borderColor: Colors.theme.orange,
+                  },
+                ]}
+                onPressIn={() => setFocusedInput("maxPrice")}
+                onEndEditing={() => setFocusedInput(null)}
+                placeholderTextColor={
+                  focusedInput === "maxPrice" ? Colors.theme.white : "#ffffff4d"
+                }
+              />
+              <View style={[styles.selectContainer]}>
+                {/* <Text style={styles.selectLabel}>Socket:</Text> */}
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedSocket}
+                    onValueChange={setSelectedSocket}
+                    style={styles.picker}
+                    onPressIn={() => setFocusedInput("socket")}
+                    onEndEditing={() => setFocusedInput(null)}
+                    dropdownIconColor={Colors.theme.white}
+                  >
+                    <Picker.Item label="Socket" value="" />
+                    {sockets.map((socket) => (
+                      <Picker.Item key={socket} label={socket} value={socket} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+              <View style={styles.selectContainer}>
+                {/* <Text style={styles.selectLabel}>RAM Type:</Text> */}
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedRamType}
+                    onValueChange={setSelectedRamType}
+                    style={styles.picker}
+                    onPressIn={() => setFocusedInput("ramType")}
+                    onEndEditing={() => setFocusedInput(null)}
+                    dropdownIconColor={Colors.theme.white}
+                  >
+                    <Picker.Item label="RAM Type" value="" />
+                    {ramTypes.map((type) => (
+                      <Picker.Item key={type} label={type} value={type} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+              <TextInput
+                cursorColor={Colors.theme.orange}
+                placeholder="Min Rating"
+                value={minRating}
+                onChangeText={setMinRating}
+                keyboardType="numeric"
+                style={[
+                  styles.input,
+                  focusedInput === "minRating" && {
+                    borderColor: Colors.theme.orange,
+                  },
+                ]}
+                onPressIn={() => setFocusedInput("minRating")}
+                onEndEditing={() => setFocusedInput(null)}
+                placeholderTextColor={
+                  focusedInput === "minRating"
+                    ? Colors.theme.white
+                    : "#ffffff4d"
+                }
+              />
+              <TextInput
+                cursorColor={Colors.theme.orange}
+                placeholder="Max Rating"
+                value={maxRating}
+                onChangeText={setMaxRating}
+                keyboardType="numeric"
+                style={[
+                  styles.input,
+                  focusedInput === "maxRating" && {
+                    borderColor: Colors.theme.orange,
+                  },
+                ]}
+                onPressIn={() => setFocusedInput("maxRating")}
+                onEndEditing={() => setFocusedInput(null)}
+                placeholderTextColor={
+                  focusedInput === "maxRating"
+                    ? Colors.theme.white
+                    : "#ffffff4d"
+                }
+              />
+              <AnimatedIconButton
+                iconFamily="FontAwesome5"
+                iconName="search"
+                buttonText="Advanced Search"
+                iconSize={14}
+                initialBackgroundColor="#ffffff00"
+                initialBorderColor="#ffffff4d"
+                initialElevation={0}
+                onPress={handleAdvancedSearch}
+                style={styles.searchButton}
+              />
+            </View>
+            <View style={styles.resetButtonContainer}>
+              <AnimatedIconButton
+                iconFamily="FontAwesome5"
+                iconName={"redo"}
+                buttonText="Reset"
+                iconSize={14}
+                initialBackgroundColor="#ffffff00"
+                initialBorderColor="#ffffff4d"
+                initialElevation={0}
+                onPress={handleReset}
+                style={styles.resetButton}
+              />
+            </View>
+          </View>
+        </Animated.View>
+      </>
+    );
+  }
+
+  function EmptyList() {
+    return (
+      <View style={styles.emptyContainer}>
+        <FontAwesome5
+          name="search"
+          size={50}
+          color={Colors.theme.orange}
+          style={styles.emptyIcon}
+        />
+        <Text style={styles.emptyText}>No CPUs found</Text>
+        <Text style={styles.emptySubText}>
+          Try adjusting your search filters
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={[commonStyles.safeAreaView, { position: "relative" }]}>
       <View style={styles.container}>
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
-          )}
-          scrollEventThrottle={16}
-        >
-          {error ? (
-            <Text style={styles.error}>Error: {error}</Text>
-          ) : cpus ? (
-            <>
-              <View style={styles.filterToggleContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName={showFilters ? "chevron-up" : "chevron-down"}
-                  buttonText="Filters"
-                  iconSize={14}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() => toggleFilters()}
-                  style={styles.filterToggle}
-                />
-              </View>
-              <Animated.View
-                style={[
-                  styles.filterContainer,
-                  {
-                    maxHeight: filterHeight.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 1000], // Adjust based on content height
-                    }),
-                    opacity: filterHeight,
-                    overflow: "hidden",
-                  },
-                ]}
-              >
-                <Text style={[styles.filterLabel, { width: "100%" }]}>
-                  Normal Search:
-                </Text>
-                {/* Name Search */}
-                <View style={[{ width: "100%" }, styles.filterSection]}>
-                  <TextInput
-                    cursorColor={Colors.theme.orange}
-                    placeholder="Search by name..."
-                    value={nameFilter}
-                    onChangeText={setNameFilter}
-                    style={[
-                      styles.input,
-                      focusedInput === "name" && {
-                        borderColor: Colors.theme.orange,
-                      },
-                    ]}
-                    onPressIn={() => setFocusedInput("name")}
-                    onEndEditing={() => setFocusedInput(null)}
-                    placeholderTextColor={
-                      focusedInput === "name" ? Colors.theme.white : "#ffffff4d"
-                    }
-                  />
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="search"
-                    buttonText="Search"
-                    iconSize={14}
-                    initialBackgroundColor="#ffffff00"
-                    initialElevation={0}
-                    initialBorderColor="#ffffff4d"
-                    onPress={handleNameSearch}
-                    style={styles.searchButton}
-                  />
-                </View>
-
-                {/* Sort Buttons */}
-                <View style={styles.filterSection}>
-                  <Text style={styles.filterLabel}>Price Sort:</Text>
-                  <View style={styles.buttonGroup}>
-                    <AnimatedIconButton
-                      iconFamily="FontAwesome5"
-                      iconName="sort-amount-up"
-                      buttonText="Asc"
-                      iconSize={14}
-                      initialBackgroundColor="#ffffff00"
-                      initialBorderColor="#ffffff4d"
-                      initialElevation={0}
-                      onPress={() => handleSortChange("price", "asc")}
-                      style={[{ width: 70 }, styles.sortButton]}
-                    />
-                    <AnimatedIconButton
-                      iconFamily="FontAwesome5"
-                      iconName="sort-amount-down"
-                      buttonText="Desc"
-                      iconSize={14}
-                      initialBackgroundColor="#ffffff00"
-                      initialBorderColor="#ffffff4d"
-                      initialElevation={0}
-                      onPress={() => handleSortChange("price", "desc")}
-                      style={[{ width: 70 }, styles.sortButton]}
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.filterSection}>
-                  <Text style={styles.filterLabel}>Rating Sort:</Text>
-                  <View style={styles.buttonGroup}>
-                    <AnimatedIconButton
-                      iconFamily="FontAwesome5"
-                      iconName="sort-amount-up"
-                      buttonText="Asc"
-                      iconSize={14}
-                      initialBackgroundColor="#ffffff00"
-                      initialBorderColor="#ffffff4d"
-                      initialElevation={0}
-                      onPress={() => handleSortChange("rating", "asc")}
-                      style={[{ width: 70 }, styles.sortButton]}
-                    />
-                    <AnimatedIconButton
-                      iconFamily="FontAwesome5"
-                      iconName="sort-amount-down"
-                      buttonText="Desc"
-                      iconSize={14}
-                      initialBackgroundColor="#ffffff00"
-                      initialBorderColor="#ffffff4d"
-                      initialElevation={0}
-                      onPress={() => handleSortChange("rating", "desc")}
-                      style={[{ width: 70 }, styles.sortButton]}
-                    />
-                  </View>
-                </View>
-
-                {/* Advanced Search Form */}
-                <View style={[{ width: "100%" }, styles.advancedFilterSection]}>
-                  <Text
-                    style={[
-                      styles.filterLabel,
-                      { width: "100%", marginBottom: 8 },
-                    ]}
-                  >
-                    Advanced Search:
-                  </Text>
-                  <View style={styles.advancedForm}>
-                    <TextInput
-                      cursorColor={Colors.theme.orange}
-                      placeholder="Min Price"
-                      value={minPrice}
-                      onChangeText={setMinPrice}
-                      keyboardType="numeric"
-                      style={[
-                        styles.input,
-                        focusedInput === "minPrice" && {
-                          borderColor: Colors.theme.orange,
-                        },
-                      ]}
-                      onPressIn={() => setFocusedInput("minPrice")}
-                      onEndEditing={() => setFocusedInput(null)}
-                      placeholderTextColor={
-                        focusedInput === "minPrice"
-                          ? Colors.theme.white
-                          : "#ffffff4d"
-                      }
-                    />
-                    <TextInput
-                      cursorColor={Colors.theme.orange}
-                      placeholder="Max Price"
-                      value={maxPrice}
-                      onChangeText={setMaxPrice}
-                      keyboardType="numeric"
-                      style={[
-                        styles.input,
-                        focusedInput === "maxPrice" && {
-                          borderColor: Colors.theme.orange,
-                        },
-                      ]}
-                      onPressIn={() => setFocusedInput("maxPrice")}
-                      onEndEditing={() => setFocusedInput(null)}
-                      placeholderTextColor={
-                        focusedInput === "maxPrice"
-                          ? Colors.theme.white
-                          : "#ffffff4d"
-                      }
-                    />
-                    <View style={[styles.selectContainer]}>
-                      {/* <Text style={styles.selectLabel}>Socket:</Text> */}
-                      <View style={styles.pickerContainer}>
-                        <Picker
-                          selectedValue={selectedSocket}
-                          onValueChange={setSelectedSocket}
-                          style={styles.picker}
-                          onPressIn={() => setFocusedInput("socket")}
-                          onEndEditing={() => setFocusedInput(null)}
-                          dropdownIconColor={Colors.theme.white}
-                        >
-                          <Picker.Item label="Socket" value="" />
-                          {sockets.map((socket) => (
-                            <Picker.Item
-                              key={socket}
-                              label={socket}
-                              value={socket}
-                            />
-                          ))}
-                        </Picker>
-                      </View>
-                    </View>
-                    <View style={styles.selectContainer}>
-                      {/* <Text style={styles.selectLabel}>RAM Type:</Text> */}
-                      <View style={styles.pickerContainer}>
-                        <Picker
-                          selectedValue={selectedRamType}
-                          onValueChange={setSelectedRamType}
-                          style={styles.picker}
-                          onPressIn={() => setFocusedInput("ramType")}
-                          onEndEditing={() => setFocusedInput(null)}
-                          dropdownIconColor={Colors.theme.white}
-                        >
-                          <Picker.Item label="RAM Type" value="" />
-                          {ramTypes.map((type) => (
-                            <Picker.Item key={type} label={type} value={type} />
-                          ))}
-                        </Picker>
-                      </View>
-                    </View>
-                    <TextInput
-                      cursorColor={Colors.theme.orange}
-                      placeholder="Min Rating"
-                      value={minRating}
-                      onChangeText={setMinRating}
-                      keyboardType="numeric"
-                      style={[
-                        styles.input,
-                        focusedInput === "minRating" && {
-                          borderColor: Colors.theme.orange,
-                        },
-                      ]}
-                      onPressIn={() => setFocusedInput("minRating")}
-                      onEndEditing={() => setFocusedInput(null)}
-                      placeholderTextColor={
-                        focusedInput === "minRating"
-                          ? Colors.theme.white
-                          : "#ffffff4d"
-                      }
-                    />
-                    <TextInput
-                      cursorColor={Colors.theme.orange}
-                      placeholder="Max Rating"
-                      value={maxRating}
-                      onChangeText={setMaxRating}
-                      keyboardType="numeric"
-                      style={[
-                        styles.input,
-                        focusedInput === "maxRating" && {
-                          borderColor: Colors.theme.orange,
-                        },
-                      ]}
-                      onPressIn={() => setFocusedInput("maxRating")}
-                      onEndEditing={() => setFocusedInput(null)}
-                      placeholderTextColor={
-                        focusedInput === "maxRating"
-                          ? Colors.theme.white
-                          : "#ffffff4d"
-                      }
-                    />
-                    <AnimatedIconButton
-                      iconFamily="FontAwesome5"
-                      iconName="search"
-                      buttonText="Search"
-                      iconSize={14}
-                      initialBackgroundColor="#ffffff00"
-                      initialBorderColor="#ffffff4d"
-                      initialElevation={0}
-                      onPress={handleAdvancedSearch}
-                      style={styles.searchButton}
-                    />
-                  </View>
-                  <View style={styles.resetButtonContainer}>
-                    <AnimatedIconButton
-                      iconFamily="FontAwesome5"
-                      iconName={"redo"}
-                      buttonText="Reset"
-                      iconSize={14}
-                      initialBackgroundColor="#ffffff00"
-                      initialBorderColor="#ffffff4d"
-                      initialElevation={0}
-                      onPress={handleReset}
-                      style={styles.resetButton}
-                    />
-                  </View>
-                </View>
-              </Animated.View>
-              {cpus.map((cpu, index) => (
-                <SelectableCPU key={index} part={cpu} />
-              ))}
-            </>
-          ) : (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={Colors.theme.orange} />
-              <Text style={styles.loadingText}>Loading CPU data...</Text>
-            </View>
-          )}
-        </ScrollView>
+        {error ? (
+          <Text style={styles.error}>Error: {error}</Text>
+        ) : cpus ? (
+          <>
+            <AnimatedFlashList
+              ref={scrollViewRef}
+              data={cpus}
+              estimatedItemSize={200} // Adjust based on your CPU item average height
+              renderItem={({ item }) => <SelectableCPU part={item} />}
+              contentContainerStyle={styles.scrollContent}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                { useNativeDriver: false }
+              )}
+              scrollEventThrottle={16}
+              showsVerticalScrollIndicator={true}
+              bounces={true}
+              overScrollMode="always"
+              ListHeaderComponent={header()}
+              ListEmptyComponent={EmptyList()}
+            />
+          </>
+        ) : (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.theme.orange} />
+            <Text style={styles.loadingText}>Loading CPU data...</Text>
+          </View>
+        )}
         <ScrollToTopButton
           scrollY={scrollY}
           onPress={() => {
-            scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+            scrollViewRef.current?.scrollToOffset({
+              offset: 0,
+              animated: true,
+            });
           }}
         />
         <LinearGradient
@@ -505,6 +521,29 @@ export default function CPUScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 32,
+  },
+  emptyIcon: {
+    marginBottom: 16,
+  },
+  emptyText: {
+    color: Colors.theme.white,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  emptySubText: {
+    color: "#ffffff8a",
+    fontSize: 14,
+  },
+  emptyContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
   resetButton: {
     alignSelf: "center",
     marginTop: 18,
@@ -561,6 +600,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: "auto",
     height: 50,
+    minWidth: 150,
     maxWidth: 200,
     maxHeight: 50,
   },
@@ -577,6 +617,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
     height: 50,
     borderRadius: 50,
+    width: "auto",
+    paddingHorizontal: 20,
   },
   advancedForm: {
     gap: 10,
