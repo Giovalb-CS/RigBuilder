@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -17,11 +17,43 @@ import { LinearGradient } from "expo-linear-gradient";
 import PartsButton from "../../components/PartsButton";
 import EventEmitter from "../../utils/EventEmitter";
 import StarRating from "../../components/StarRating";
+import { captureRef } from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
 
 export default function Configurator() {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const router = useRouter();
+
+  // Share states
+  const [shareMode, setShareMode] = useState(false);
+  const [scrollHeight, setScrollHeight] = useState(0);
+  const scrollViewRef = useRef(null);
+  const contentRef = useRef(null);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [contentHeight, setContentHeight] = useState(0);
+
+  const handleShare = async () => {
+    try {
+      setShareMode(true);
+      setIsCapturing(true);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const uri = await captureRef(contentRef, {
+        format: "png",
+        quality: 1,
+        result: "tmpfile",
+      });
+
+      await Sharing.shareAsync(uri);
+    } catch (error) {
+      console.error("Error sharing:", error);
+    } finally {
+      setIsCapturing(false);
+      setShareMode(false);
+    }
+  };
 
   // Build states
   const [name, setName] = useState("New Build");
@@ -238,71 +270,75 @@ export default function Configurator() {
                   </Text>
                 </View>
               </View>
-              <View style={styles.buttonsContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="exchange-alt"
-                  buttonText={"Swap"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(parts)/(cpu)",
-                      params: {
-                        socket: selectedMOBO?.socket,
-                        ramType: selectedMOBO?.ramType,
-                      },
-                    })
-                  }
-                  style={styles.actionButton}
-                />
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="trash"
-                  buttonText={"Delete"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={handleRemoveCPU}
-                  style={styles.actionButton}
-                />
-              </View>
-              <View style={styles.bottomContainer}>
-                <Text
-                  style={styles.componentLink}
-                  onPress={() => Linking.openURL(selectedCPU.shop_URL)}
-                >
-                  Link
-                </Text>
-                <View style={styles.quantityContainer}>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="minus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleCpuQuantityChange(-1)}
-                    style={styles.quantityButton}
-                  />
-                  <Text style={styles.quantityText}>x{cpuQuantity}</Text>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="plus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleCpuQuantityChange(1)}
-                    style={styles.quantityButton}
-                  />
-                </View>
-              </View>
+              {!shareMode && (
+                <>
+                  <View style={styles.buttonsContainer}>
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="exchange-alt"
+                      buttonText={"Swap"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(parts)/(cpu)",
+                          params: {
+                            socket: selectedMOBO?.socket,
+                            ramType: selectedMOBO?.ramType,
+                          },
+                        })
+                      }
+                      style={styles.actionButton}
+                    />
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText={"Delete"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleRemoveCPU}
+                      style={styles.actionButton}
+                    />
+                  </View>
+                  <View style={styles.bottomContainer}>
+                    <Text
+                      style={styles.componentLink}
+                      onPress={() => Linking.openURL(selectedCPU.shop_URL)}
+                    >
+                      Link
+                    </Text>
+                    <View style={styles.quantityContainer}>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="minus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleCpuQuantityChange(-1)}
+                        style={styles.quantityButton}
+                      />
+                      <Text style={styles.quantityText}>x{cpuQuantity}</Text>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="plus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleCpuQuantityChange(1)}
+                        style={styles.quantityButton}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           );
         }
@@ -350,67 +386,71 @@ export default function Configurator() {
                   </Text>
                 </View>
               </View>
-              <View style={styles.buttonsContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="exchange-alt"
-                  buttonText={"Swap"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(parts)/(gpu)",
-                    })
-                  }
-                  style={styles.actionButton}
-                />
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="trash"
-                  buttonText={"Delete"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={handleRemoveGPU}
-                  style={styles.actionButton}
-                />
-              </View>
-              <View style={styles.bottomContainer}>
-                <Text
-                  style={styles.componentLink}
-                  onPress={() => Linking.openURL(selectedGPU.shop_URL)}
-                >
-                  Link
-                </Text>
-                <View style={styles.quantityContainer}>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="minus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleGpuQuantityChange(-1)}
-                    style={styles.quantityButton}
-                  />
-                  <Text style={styles.quantityText}>x{gpuQuantity}</Text>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="plus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleGpuQuantityChange(1)}
-                    style={styles.quantityButton}
-                  />
-                </View>
-              </View>
+              {!shareMode && (
+                <>
+                  <View style={styles.buttonsContainer}>
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="exchange-alt"
+                      buttonText={"Swap"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(parts)/(gpu)",
+                        })
+                      }
+                      style={styles.actionButton}
+                    />
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText={"Delete"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleRemoveGPU}
+                      style={styles.actionButton}
+                    />
+                  </View>
+                  <View style={styles.bottomContainer}>
+                    <Text
+                      style={styles.componentLink}
+                      onPress={() => Linking.openURL(selectedGPU.shop_URL)}
+                    >
+                      Link
+                    </Text>
+                    <View style={styles.quantityContainer}>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="minus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleGpuQuantityChange(-1)}
+                        style={styles.quantityButton}
+                      />
+                      <Text style={styles.quantityText}>x{gpuQuantity}</Text>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="plus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleGpuQuantityChange(1)}
+                        style={styles.quantityButton}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           );
         }
@@ -454,67 +494,71 @@ export default function Configurator() {
                   </Text>
                 </View>
               </View>
-              <View style={styles.buttonsContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="exchange-alt"
-                  buttonText={"Swap"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(parts)/(ram)",
-                    })
-                  }
-                  style={styles.actionButton}
-                />
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="trash"
-                  buttonText={"Delete"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={handleRemoveRAM}
-                  style={styles.actionButton}
-                />
-              </View>
-              <View style={styles.bottomContainer}>
-                <Text
-                  style={styles.componentLink}
-                  onPress={() => Linking.openURL(selectedRAM.shop_URL)}
-                >
-                  Link
-                </Text>
-                <View style={styles.quantityContainer}>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="minus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleRamQuantityChange(-1)}
-                    style={styles.quantityButton}
-                  />
-                  <Text style={styles.quantityText}>x{ramQuantity}</Text>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="plus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleRamQuantityChange(1)}
-                    style={styles.quantityButton}
-                  />
-                </View>
-              </View>
+              {!shareMode && (
+                <>
+                  <View style={styles.buttonsContainer}>
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="exchange-alt"
+                      buttonText={"Swap"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(parts)/(ram)",
+                        })
+                      }
+                      style={styles.actionButton}
+                    />
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText={"Delete"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleRemoveRAM}
+                      style={styles.actionButton}
+                    />
+                  </View>
+                  <View style={styles.bottomContainer}>
+                    <Text
+                      style={styles.componentLink}
+                      onPress={() => Linking.openURL(selectedRAM.shop_URL)}
+                    >
+                      Link
+                    </Text>
+                    <View style={styles.quantityContainer}>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="minus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleRamQuantityChange(-1)}
+                        style={styles.quantityButton}
+                      />
+                      <Text style={styles.quantityText}>x{ramQuantity}</Text>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="plus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleRamQuantityChange(1)}
+                        style={styles.quantityButton}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           );
         }
@@ -558,67 +602,71 @@ export default function Configurator() {
                   </Text>
                 </View>
               </View>
-              <View style={styles.buttonsContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="exchange-alt"
-                  buttonText={"Swap"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(parts)/(mobo)",
-                    })
-                  }
-                  style={styles.actionButton}
-                />
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="trash"
-                  buttonText={"Delete"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={handleRemoveMOBO}
-                  style={styles.actionButton}
-                />
-              </View>
-              <View style={styles.bottomContainer}>
-                <Text
-                  style={styles.componentLink}
-                  onPress={() => Linking.openURL(selectedMOBO.shop_URL)}
-                >
-                  Link
-                </Text>
-                <View style={styles.quantityContainer}>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="minus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleMoboQuantityChange(-1)}
-                    style={styles.quantityButton}
-                  />
-                  <Text style={styles.quantityText}>x{moboQuantity}</Text>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="plus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleMoboQuantityChange(1)}
-                    style={styles.quantityButton}
-                  />
-                </View>
-              </View>
+              {!shareMode && (
+                <>
+                  <View style={styles.buttonsContainer}>
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="exchange-alt"
+                      buttonText={"Swap"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(parts)/(mobo)",
+                        })
+                      }
+                      style={styles.actionButton}
+                    />
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText={"Delete"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleRemoveMOBO}
+                      style={styles.actionButton}
+                    />
+                  </View>
+                  <View style={styles.bottomContainer}>
+                    <Text
+                      style={styles.componentLink}
+                      onPress={() => Linking.openURL(selectedMOBO.shop_URL)}
+                    >
+                      Link
+                    </Text>
+                    <View style={styles.quantityContainer}>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="minus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleMoboQuantityChange(-1)}
+                        style={styles.quantityButton}
+                      />
+                      <Text style={styles.quantityText}>x{moboQuantity}</Text>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="plus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleMoboQuantityChange(1)}
+                        style={styles.quantityButton}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           );
         }
@@ -662,67 +710,71 @@ export default function Configurator() {
                   </Text>
                 </View>
               </View>
-              <View style={styles.buttonsContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="exchange-alt"
-                  buttonText={"Swap"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(parts)/(ssd)",
-                    })
-                  }
-                  style={styles.actionButton}
-                />
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="trash"
-                  buttonText={"Delete"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={handleRemoveSSD}
-                  style={styles.actionButton}
-                />
-              </View>
-              <View style={styles.bottomContainer}>
-                <Text
-                  style={styles.componentLink}
-                  onPress={() => Linking.openURL(selectedSSD.shop_URL)}
-                >
-                  Link
-                </Text>
-                <View style={styles.quantityContainer}>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="minus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleSsdQuantityChange(-1)}
-                    style={styles.quantityButton}
-                  />
-                  <Text style={styles.quantityText}>x{ssdQuantity}</Text>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="plus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleSsdQuantityChange(1)}
-                    style={styles.quantityButton}
-                  />
-                </View>
-              </View>
+              {!shareMode && (
+                <>
+                  <View style={styles.buttonsContainer}>
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="exchange-alt"
+                      buttonText={"Swap"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(parts)/(ssd)",
+                        })
+                      }
+                      style={styles.actionButton}
+                    />
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText={"Delete"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleRemoveSSD}
+                      style={styles.actionButton}
+                    />
+                  </View>
+                  <View style={styles.bottomContainer}>
+                    <Text
+                      style={styles.componentLink}
+                      onPress={() => Linking.openURL(selectedSSD.shop_URL)}
+                    >
+                      Link
+                    </Text>
+                    <View style={styles.quantityContainer}>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="minus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleSsdQuantityChange(-1)}
+                        style={styles.quantityButton}
+                      />
+                      <Text style={styles.quantityText}>x{ssdQuantity}</Text>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="plus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleSsdQuantityChange(1)}
+                        style={styles.quantityButton}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           );
         }
@@ -745,88 +797,92 @@ export default function Configurator() {
               <View style={styles.partContainer}>
                 <View style={styles.imageContainer}>
                   <Image
-                    source={{ uri: coolerSelected.image_URL }}
+                    source={{ uri: selectedCooler.image_URL }}
                     style={styles.image}
                     resizeMode="contain"
                   />
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>
-                    {coolerSelected.name.length > (isLandscape ? 40 : 60)
-                      ? coolerSelected.name
+                    {selectedCooler.name.length > (isLandscape ? 40 : 60)
+                      ? selectedCooler.name
                           .substring(0, isLandscape ? 37 : 57)
                           .trim() + "..."
-                      : coolerSelected.name}
+                      : selectedCooler.name}
                   </Text>
                   <View style={styles.componentRating}>
-                    <StarRating rating={coolerSelected.rating} />
+                    <StarRating rating={selectedCooler.rating} />
                   </View>
                   <Text style={styles.componentPrice}>
-                    €{coolerSelected.price}
+                    €{selectedCooler.price}
                   </Text>
                 </View>
               </View>
-              <View style={styles.buttonsContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="exchange-alt"
-                  buttonText={"Swap"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(parts)/(cooler)",
-                    })
-                  }
-                  style={styles.actionButton}
-                />
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="trash"
-                  buttonText={"Delete"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={handleRemoveCooler}
-                  style={styles.actionButton}
-                />
-              </View>
-              <View style={styles.bottomContainer}>
-                <Text
-                  style={styles.componentLink}
-                  onPress={() => Linking.openURL(coolerSelected.shop_URL)}
-                >
-                  Link
-                </Text>
-                <View style={styles.quantityContainer}>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="minus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleCoolerQuantityChange(-1)}
-                    style={styles.quantityButton}
-                  />
-                  <Text style={styles.quantityText}>x{coolerQuantity}</Text>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="plus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleCoolerQuantityChange(1)}
-                    style={styles.quantityButton}
-                  />
-                </View>
-              </View>
+              {!shareMode && (
+                <>
+                  <View style={styles.buttonsContainer}>
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="exchange-alt"
+                      buttonText={"Swap"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(parts)/(cooler)",
+                        })
+                      }
+                      style={styles.actionButton}
+                    />
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText={"Delete"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleRemoveCooler}
+                      style={styles.actionButton}
+                    />
+                  </View>
+                  <View style={styles.bottomContainer}>
+                    <Text
+                      style={styles.componentLink}
+                      onPress={() => Linking.openURL(selectedCooler.shop_URL)}
+                    >
+                      Link
+                    </Text>
+                    <View style={styles.quantityContainer}>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="minus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleCoolerQuantityChange(-1)}
+                        style={styles.quantityButton}
+                      />
+                      <Text style={styles.quantityText}>x{coolerQuantity}</Text>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="plus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleCoolerQuantityChange(1)}
+                        style={styles.quantityButton}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           );
         }
@@ -870,67 +926,71 @@ export default function Configurator() {
                   </Text>
                 </View>
               </View>
-              <View style={styles.buttonsContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="exchange-alt"
-                  buttonText={"Swap"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(parts)/(psu)",
-                    })
-                  }
-                  style={styles.actionButton}
-                />
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="trash"
-                  buttonText={"Delete"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={handleRemovePSU}
-                  style={styles.actionButton}
-                />
-              </View>
-              <View style={styles.bottomContainer}>
-                <Text
-                  style={styles.componentLink}
-                  onPress={() => Linking.openURL(selectedPSU.shop_URL)}
-                >
-                  Link
-                </Text>
-                <View style={styles.quantityContainer}>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="minus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handlePsuQuantityChange(-1)}
-                    style={styles.quantityButton}
-                  />
-                  <Text style={styles.quantityText}>x{psuQuantity}</Text>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="plus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handlePsuQuantityChange(1)}
-                    style={styles.quantityButton}
-                  />
-                </View>
-              </View>
+              {!shareMode && (
+                <>
+                  <View style={styles.buttonsContainer}>
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="exchange-alt"
+                      buttonText={"Swap"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(parts)/(psu)",
+                        })
+                      }
+                      style={styles.actionButton}
+                    />
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText={"Delete"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleRemovePSU}
+                      style={styles.actionButton}
+                    />
+                  </View>
+                  <View style={styles.bottomContainer}>
+                    <Text
+                      style={styles.componentLink}
+                      onPress={() => Linking.openURL(selectedPSU.shop_URL)}
+                    >
+                      Link
+                    </Text>
+                    <View style={styles.quantityContainer}>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="minus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handlePsuQuantityChange(-1)}
+                        style={styles.quantityButton}
+                      />
+                      <Text style={styles.quantityText}>x{psuQuantity}</Text>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="plus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handlePsuQuantityChange(1)}
+                        style={styles.quantityButton}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           );
         }
@@ -974,67 +1034,71 @@ export default function Configurator() {
                   </Text>
                 </View>
               </View>
-              <View style={styles.buttonsContainer}>
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="exchange-alt"
-                  buttonText={"Swap"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(parts)/(case)",
-                    })
-                  }
-                  style={styles.actionButton}
-                />
-                <AnimatedIconButton
-                  iconFamily="FontAwesome5"
-                  iconName="trash"
-                  buttonText={"Delete"}
-                  iconSize={16}
-                  initialBackgroundColor="#ffffff00"
-                  initialBorderColor="#ffffff4d"
-                  initialElevation={0}
-                  onPress={handleRemoveCase}
-                  style={styles.actionButton}
-                />
-              </View>
-              <View style={styles.bottomContainer}>
-                <Text
-                  style={styles.componentLink}
-                  onPress={() => Linking.openURL(selectedCase.shop_URL)}
-                >
-                  Link
-                </Text>
-                <View style={styles.quantityContainer}>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="minus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleCaseQuantityChange(-1)}
-                    style={styles.quantityButton}
-                  />
-                  <Text style={styles.quantityText}>x{caseQuantity}</Text>
-                  <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="plus"
-                    buttonText=""
-                    iconSize={12}
-                    initialBackgroundColor="#ffffff00"
-                    initialBorderColor="#ffffff4d"
-                    initialElevation={0}
-                    onPress={() => handleCaseQuantityChange(1)}
-                    style={styles.quantityButton}
-                  />
-                </View>
-              </View>
+              {!shareMode && (
+                <>
+                  <View style={styles.buttonsContainer}>
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="exchange-alt"
+                      buttonText={"Swap"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(parts)/(case)",
+                        })
+                      }
+                      style={styles.actionButton}
+                    />
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText={"Delete"}
+                      iconSize={16}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleRemoveCase}
+                      style={styles.actionButton}
+                    />
+                  </View>
+                  <View style={styles.bottomContainer}>
+                    <Text
+                      style={styles.componentLink}
+                      onPress={() => Linking.openURL(selectedCase.shop_URL)}
+                    >
+                      Link
+                    </Text>
+                    <View style={styles.quantityContainer}>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="minus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleCaseQuantityChange(-1)}
+                        style={styles.quantityButton}
+                      />
+                      <Text style={styles.quantityText}>x{caseQuantity}</Text>
+                      <AnimatedIconButton
+                        iconFamily="FontAwesome5"
+                        iconName="plus"
+                        buttonText=""
+                        iconSize={12}
+                        initialBackgroundColor="#ffffff00"
+                        initialBorderColor="#ffffff4d"
+                        initialElevation={0}
+                        onPress={() => handleCaseQuantityChange(1)}
+                        style={styles.quantityButton}
+                      />
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           );
         }
@@ -1052,50 +1116,76 @@ export default function Configurator() {
     }
   };
 
+  function Content() {
+    return (
+      <>
+        <View style={styles.buildInfoContainer}>
+          <TextInput
+            style={styles.buildNameInput}
+            value={name}
+            onChangeText={(text) => {
+              EventEmitter.emit("buildNameChanged", text);
+            }}
+            placeholder="Build Name"
+            placeholderTextColor="#ffffff4d"
+            cursorColor={Colors.theme.orange}
+          />
+          <View style={styles.buildStatsContainer}>
+            <Text style={styles.buildStatsText}>Price: €{price}</Text>
+            <Text style={styles.buildStatsText}>Power: {tdp}W</Text>
+            <Text
+              style={[
+                styles.buildStatsText,
+                {
+                  color: compatibility === "Compatible" ? "#51ff00" : "#ff3300",
+                },
+              ]}
+            >
+              {compatibility}
+            </Text>
+          </View>
+          {!shareMode && (
+            <AnimatedIconButton
+              iconFamily="FontAwesome5"
+              iconName="share-alt"
+              buttonText=""
+              iconSize={20}
+              initialBackgroundColor="#ffffff00"
+              initialBorderColor="#ffffff4d"
+              initialElevation={0}
+              onPress={handleShare}
+              style={styles.shareButton}
+            />
+          )}
+        </View>
+        <View style={styles.buttonContainer}>
+          {["CPU", "GPU", "RAM", "MOBO", "SSD", "COOLER", "PSU", "CASE"].map(
+            (type) => (
+              <View key={type}>{renderPart(type)}</View>
+            )
+          )}
+        </View>
+      </>
+    );
+  }
+
   return (
     <SafeAreaView style={commonStyles.safeAreaView}>
       <View style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={{
-            justifyContent: "space-around",
-          }}
-        >
-          <View style={styles.buildInfoContainer}>
-            <TextInput
-              style={styles.buildNameInput}
-              value={name}
-              onChangeText={(text) => {
-                EventEmitter.emit("buildNameChanged", text);
-              }}
-              placeholder="Build Name"
-              placeholderTextColor="#ffffff4d"
-              cursorColor={Colors.theme.orange}
-            />
-            <View style={styles.buildStatsContainer}>
-              <Text style={styles.buildStatsText}>Price: €{price}</Text>
-              <Text style={styles.buildStatsText}>Power: {tdp}W</Text>
-              <Text
-                style={[
-                  styles.buildStatsText,
-                  {
-                    color:
-                      compatibility === "Compatible" ? "#51ff00" : "#ff3300",
-                  },
-                ]}
-              >
-                {compatibility}
-              </Text>
-            </View>
+        {isCapturing ? (
+          <View style={styles.scrollView} ref={contentRef} collapsable={false}>
+            <Content />
           </View>
-          <View style={styles.buttonContainer}>
-            {["CPU", "GPU", "RAM", "MOBO", "SSD", "COOLER", "PSU", "CASE"].map(
-              (type) => (
-                <View key={type}>{renderPart(type)}</View>
-              )
-            )}
-          </View>
-        </ScrollView>
+        ) : (
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={{
+              justifyContent: "space-around",
+            }}
+          >
+            <Content />
+          </ScrollView>
+        )}
         <LinearGradient
           colors={[Colors.theme.darkgrey, "transparent"]}
           style={styles.topFade}
@@ -1110,6 +1200,13 @@ export default function Configurator() {
 }
 
 const styles = StyleSheet.create({
+  shareButton: {
+    position: "absolute",
+    right: 16,
+    top: 8,
+    width: 50,
+    height: 50,
+  },
   buildInfoContainer: {
     padding: 16,
     backgroundColor: "#757575ad",
