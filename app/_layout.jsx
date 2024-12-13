@@ -128,7 +128,7 @@ export default function RootLayout() {
     <ThemeProvider value={CustomDarkTheme}>
       <MenuProvider>
         <StatusBar
-          barStyle={"light-content"}
+          barStyle={"default"}
           backgroundColor={Colors.dark.background}
         />
         <Stack

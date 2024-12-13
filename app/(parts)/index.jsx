@@ -7,6 +7,8 @@ import {
   View,
   Image,
   useWindowDimensions,
+  Linking,
+  TextInput,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Colors from "../../constants/Colors";
@@ -22,28 +24,35 @@ export default function Configurator() {
   const router = useRouter();
 
   // Build states
-  const [name, setName] = useState("");
+  const [name, setName] = useState("New Build");
   const [price, setPrice] = useState(0);
   const [tdp, setTdp] = useState(0);
   const [compatibility, setCompatibility] = useState("Compatible");
   // CPU states
   const [selectedCPU, setSelectedCPU] = useState(null);
+  const [cpuQuantity, setCpuQuantity] = useState(1);
   // GPU states
   const [selectedGPU, setSelectedGPU] = useState(null);
+  const [gpuQuantity, setGpuQuantity] = useState(1);
   // RAM states
   const [selectedRAM, setSelectedRAM] = useState(null);
+  const [ramQuantity, setRamQuantity] = useState(1);
   // MOBO states
   const [selectedMOBO, setSelectedMOBO] = useState(null);
+  const [moboQuantity, setMoboQuantity] = useState(1);
   // SSD states
   const [selectedSSD, setSelectedSSD] = useState(null);
+  const [ssdQuantity, setSsdQuantity] = useState(1);
   // Cooler states
   const [selectedCooler, setSelectedCooler] = useState(null);
+  const [coolerQuantity, setCoolerQuantity] = useState(1);
   // PSU states
   const [selectedPSU, setSelectedPSU] = useState(null);
+  const [psuQuantity, setPsuQuantity] = useState(1);
   // Case states
   const [selectedCase, setSelectedCase] = useState(null);
+  const [caseQuantity, setCaseQuantity] = useState(1);
 
-  // Handle incoming selected component
   // Handle incoming selected components
   useEffect(() => {
     const cpuHandler = (cpu) => {
@@ -93,8 +102,110 @@ export default function Configurator() {
     };
   }, []);
 
+  // Handlers per edit Build
+  useEffect(() => {
+    // Handler edit
+    const nameChangeHandler = (newName) => {
+      setName(newName);
+    };
+    // Handler edit da home
+    const buildEditHandler = (buildData) => {
+      if (buildData?.name) {
+        setName(buildData.name);
+      }
+    };
+
+    EventEmitter.on("buildNameChanged", nameChangeHandler);
+    EventEmitter.on("buildEdit", buildEditHandler);
+
+    return () => {
+      EventEmitter.events["buildNameChanged"] = [];
+      EventEmitter.events["buildEdit"] = [];
+    };
+  }, []);
+
+  // Handlers per le rimozioni
   const handleRemoveCPU = () => {
     setSelectedCPU(null);
+    setCpuQuantity(1);
+  };
+  const handleRemoveGPU = () => {
+    setSelectedGPU(null);
+    setGpuQuantity(1);
+  };
+  const handleRemoveRAM = () => {
+    setSelectedRAM(null);
+    setRamQuantity(1);
+  };
+  const handleRemoveMOBO = () => {
+    setSelectedMOBO(null);
+    setMoboQuantity(1);
+  };
+  const handleRemoveSSD = () => {
+    setSelectedSSD(null);
+    setSsdQuantity(1);
+  };
+  const handleRemoveCooler = () => {
+    setSelectedCooler(null);
+    setCoolerQuantity(1);
+  };
+  const handleRemovePSU = () => {
+    setSelectedPSU(null);
+    setPsuQuantity(1);
+  };
+  const handleRemoveCase = () => {
+    setSelectedCase(null);
+    setCaseQuantity(1);
+  };
+
+  // Quantity handlers
+  const handleCpuQuantityChange = (increment) => {
+    setCpuQuantity((prev) => {
+      const newQuantity = prev + increment;
+      return newQuantity >= 1 ? newQuantity : prev;
+    });
+  };
+  const handleGpuQuantityChange = (increment) => {
+    setGpuQuantity((prev) => {
+      const newQuantity = prev + increment;
+      return newQuantity >= 1 ? newQuantity : prev;
+    });
+  };
+  const handleRamQuantityChange = (increment) => {
+    setRamQuantity((prev) => {
+      const newQuantity = prev + increment;
+      return newQuantity >= 1 ? newQuantity : prev;
+    });
+  };
+  const handleMoboQuantityChange = (increment) => {
+    setMoboQuantity((prev) => {
+      const newQuantity = prev + increment;
+      return newQuantity >= 1 ? newQuantity : prev;
+    });
+  };
+  const handleSsdQuantityChange = (increment) => {
+    setSsdQuantity((prev) => {
+      const newQuantity = prev + increment;
+      return newQuantity >= 1 ? newQuantity : prev;
+    });
+  };
+  const handleCoolerQuantityChange = (increment) => {
+    setCoolerQuantity((prev) => {
+      const newQuantity = prev + increment;
+      return newQuantity >= 1 ? newQuantity : prev;
+    });
+  };
+  const handlePsuQuantityChange = (increment) => {
+    setPsuQuantity((prev) => {
+      const newQuantity = prev + increment;
+      return newQuantity >= 1 ? newQuantity : prev;
+    });
+  };
+  const handleCaseQuantityChange = (increment) => {
+    setCaseQuantity((prev) => {
+      const newQuantity = prev + increment;
+      return newQuantity >= 1 ? newQuantity : prev;
+    });
   };
 
   const renderPart = (type) => {
@@ -159,6 +270,39 @@ export default function Configurator() {
                   style={styles.actionButton}
                 />
               </View>
+              <View style={styles.bottomContainer}>
+                <Text
+                  style={styles.componentLink}
+                  onPress={() => Linking.openURL(selectedCPU.shop_URL)}
+                >
+                  Link
+                </Text>
+                <View style={styles.quantityContainer}>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="minus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleCpuQuantityChange(-1)}
+                    style={styles.quantityButton}
+                  />
+                  <Text style={styles.quantityText}>x{cpuQuantity}</Text>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="plus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleCpuQuantityChange(1)}
+                    style={styles.quantityButton}
+                  />
+                </View>
+              </View>
             </View>
           );
         }
@@ -177,19 +321,773 @@ export default function Configurator() {
             }
           />
         );
-      // Add similar cases for other components
+
+      case "GPU":
+        if (selectedGPU) {
+          return (
+            <View style={styles.selectedComponent}>
+              <View style={styles.partContainer}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: selectedGPU.image_URL }}
+                    style={styles.image}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.componentInfo}>
+                  <Text style={styles.componentName}>
+                    {selectedGPU.name.length > (isLandscape ? 40 : 60)
+                      ? selectedGPU.name
+                          .substring(0, isLandscape ? 37 : 57)
+                          .trim() + "..."
+                      : selectedGPU.name}
+                  </Text>
+                  <View style={styles.componentRating}>
+                    <StarRating rating={selectedGPU.rating} />
+                  </View>
+                  <Text style={styles.componentPrice}>
+                    €{selectedGPU.price}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.buttonsContainer}>
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="exchange-alt"
+                  buttonText={"Swap"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(parts)/(gpu)",
+                    })
+                  }
+                  style={styles.actionButton}
+                />
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="trash"
+                  buttonText={"Delete"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={handleRemoveGPU}
+                  style={styles.actionButton}
+                />
+              </View>
+              <View style={styles.bottomContainer}>
+                <Text
+                  style={styles.componentLink}
+                  onPress={() => Linking.openURL(selectedGPU.shop_URL)}
+                >
+                  Link
+                </Text>
+                <View style={styles.quantityContainer}>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="minus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleGpuQuantityChange(-1)}
+                    style={styles.quantityButton}
+                  />
+                  <Text style={styles.quantityText}>x{gpuQuantity}</Text>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="plus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleGpuQuantityChange(1)}
+                    style={styles.quantityButton}
+                  />
+                </View>
+              </View>
+            </View>
+          );
+        }
+        return (
+          <PartsButton
+            title="Add GPU"
+            icon={require("../../assets/images/pc-parts-icons/gpu.png")}
+            onPress={() =>
+              router.push({
+                pathname: "/(parts)/(gpu)",
+              })
+            }
+          />
+        );
+
+      case "RAM":
+        if (selectedRAM) {
+          return (
+            <View style={styles.selectedComponent}>
+              <View style={styles.partContainer}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: selectedRAM.image_URL }}
+                    style={styles.image}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.componentInfo}>
+                  <Text style={styles.componentName}>
+                    {selectedRAM.name.length > (isLandscape ? 40 : 60)
+                      ? selectedRAM.name
+                          .substring(0, isLandscape ? 37 : 57)
+                          .trim() + "..."
+                      : selectedRAM.name}
+                  </Text>
+                  <View style={styles.componentRating}>
+                    <StarRating rating={selectedRAM.rating} />
+                  </View>
+                  <Text style={styles.componentPrice}>
+                    €{selectedRAM.price}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.buttonsContainer}>
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="exchange-alt"
+                  buttonText={"Swap"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(parts)/(ram)",
+                    })
+                  }
+                  style={styles.actionButton}
+                />
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="trash"
+                  buttonText={"Delete"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={handleRemoveRAM}
+                  style={styles.actionButton}
+                />
+              </View>
+              <View style={styles.bottomContainer}>
+                <Text
+                  style={styles.componentLink}
+                  onPress={() => Linking.openURL(selectedRAM.shop_URL)}
+                >
+                  Link
+                </Text>
+                <View style={styles.quantityContainer}>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="minus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleRamQuantityChange(-1)}
+                    style={styles.quantityButton}
+                  />
+                  <Text style={styles.quantityText}>x{ramQuantity}</Text>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="plus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleRamQuantityChange(1)}
+                    style={styles.quantityButton}
+                  />
+                </View>
+              </View>
+            </View>
+          );
+        }
+        return (
+          <PartsButton
+            title="Add RAM"
+            icon={require("../../assets/images/pc-parts-icons/ram.png")}
+            onPress={() =>
+              router.push({
+                pathname: "/(parts)/(ram)",
+              })
+            }
+          />
+        );
+
+      case "MOBO":
+        if (selectedMOBO) {
+          return (
+            <View style={styles.selectedComponent}>
+              <View style={styles.partContainer}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: selectedMOBO.image_URL }}
+                    style={styles.image}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.componentInfo}>
+                  <Text style={styles.componentName}>
+                    {selectedMOBO.name.length > (isLandscape ? 40 : 60)
+                      ? selectedMOBO.name
+                          .substring(0, isLandscape ? 37 : 57)
+                          .trim() + "..."
+                      : selectedMOBO.name}
+                  </Text>
+                  <View style={styles.componentRating}>
+                    <StarRating rating={selectedMOBO.rating} />
+                  </View>
+                  <Text style={styles.componentPrice}>
+                    €{selectedMOBO.price}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.buttonsContainer}>
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="exchange-alt"
+                  buttonText={"Swap"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(parts)/(mobo)",
+                    })
+                  }
+                  style={styles.actionButton}
+                />
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="trash"
+                  buttonText={"Delete"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={handleRemoveMOBO}
+                  style={styles.actionButton}
+                />
+              </View>
+              <View style={styles.bottomContainer}>
+                <Text
+                  style={styles.componentLink}
+                  onPress={() => Linking.openURL(selectedMOBO.shop_URL)}
+                >
+                  Link
+                </Text>
+                <View style={styles.quantityContainer}>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="minus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleMoboQuantityChange(-1)}
+                    style={styles.quantityButton}
+                  />
+                  <Text style={styles.quantityText}>x{moboQuantity}</Text>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="plus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleMoboQuantityChange(1)}
+                    style={styles.quantityButton}
+                  />
+                </View>
+              </View>
+            </View>
+          );
+        }
+        return (
+          <PartsButton
+            title="Add MOBO"
+            icon={require("../../assets/images/pc-parts-icons/motherboard.png")}
+            onPress={() =>
+              router.push({
+                pathname: "/(parts)/(mobo)",
+              })
+            }
+          />
+        );
+
+      case "SSD":
+        if (selectedSSD) {
+          return (
+            <View style={styles.selectedComponent}>
+              <View style={styles.partContainer}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: selectedSSD.image_URL }}
+                    style={styles.image}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.componentInfo}>
+                  <Text style={styles.componentName}>
+                    {selectedSSD.name.length > (isLandscape ? 40 : 60)
+                      ? selectedSSD.name
+                          .substring(0, isLandscape ? 37 : 57)
+                          .trim() + "..."
+                      : selectedSSD.name}
+                  </Text>
+                  <View style={styles.componentRating}>
+                    <StarRating rating={selectedSSD.rating} />
+                  </View>
+                  <Text style={styles.componentPrice}>
+                    €{selectedSSD.price}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.buttonsContainer}>
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="exchange-alt"
+                  buttonText={"Swap"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(parts)/(ssd)",
+                    })
+                  }
+                  style={styles.actionButton}
+                />
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="trash"
+                  buttonText={"Delete"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={handleRemoveSSD}
+                  style={styles.actionButton}
+                />
+              </View>
+              <View style={styles.bottomContainer}>
+                <Text
+                  style={styles.componentLink}
+                  onPress={() => Linking.openURL(selectedSSD.shop_URL)}
+                >
+                  Link
+                </Text>
+                <View style={styles.quantityContainer}>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="minus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleSsdQuantityChange(-1)}
+                    style={styles.quantityButton}
+                  />
+                  <Text style={styles.quantityText}>x{ssdQuantity}</Text>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="plus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleSsdQuantityChange(1)}
+                    style={styles.quantityButton}
+                  />
+                </View>
+              </View>
+            </View>
+          );
+        }
+        return (
+          <PartsButton
+            title="Add SSD"
+            icon={require("../../assets/images/pc-parts-icons/ssd.png")}
+            onPress={() =>
+              router.push({
+                pathname: "/(parts)/(ssd)",
+              })
+            }
+          />
+        );
+
+      case "COOLER":
+        if (selectedCooler) {
+          return (
+            <View style={styles.selectedComponent}>
+              <View style={styles.partContainer}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: coolerSelected.image_URL }}
+                    style={styles.image}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.componentInfo}>
+                  <Text style={styles.componentName}>
+                    {coolerSelected.name.length > (isLandscape ? 40 : 60)
+                      ? coolerSelected.name
+                          .substring(0, isLandscape ? 37 : 57)
+                          .trim() + "..."
+                      : coolerSelected.name}
+                  </Text>
+                  <View style={styles.componentRating}>
+                    <StarRating rating={coolerSelected.rating} />
+                  </View>
+                  <Text style={styles.componentPrice}>
+                    €{coolerSelected.price}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.buttonsContainer}>
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="exchange-alt"
+                  buttonText={"Swap"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(parts)/(cooler)",
+                    })
+                  }
+                  style={styles.actionButton}
+                />
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="trash"
+                  buttonText={"Delete"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={handleRemoveCooler}
+                  style={styles.actionButton}
+                />
+              </View>
+              <View style={styles.bottomContainer}>
+                <Text
+                  style={styles.componentLink}
+                  onPress={() => Linking.openURL(coolerSelected.shop_URL)}
+                >
+                  Link
+                </Text>
+                <View style={styles.quantityContainer}>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="minus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleCoolerQuantityChange(-1)}
+                    style={styles.quantityButton}
+                  />
+                  <Text style={styles.quantityText}>x{coolerQuantity}</Text>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="plus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleCoolerQuantityChange(1)}
+                    style={styles.quantityButton}
+                  />
+                </View>
+              </View>
+            </View>
+          );
+        }
+        return (
+          <PartsButton
+            title="Add Cooler"
+            icon={require("../../assets/images/pc-parts-icons/cooler.png")}
+            onPress={() =>
+              router.push({
+                pathname: "/(parts)/(cooler)",
+              })
+            }
+          />
+        );
+
+      case "PSU":
+        if (selectedPSU) {
+          return (
+            <View style={styles.selectedComponent}>
+              <View style={styles.partContainer}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: selectedPSU.image_URL }}
+                    style={styles.image}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.componentInfo}>
+                  <Text style={styles.componentName}>
+                    {selectedPSU.name.length > (isLandscape ? 40 : 60)
+                      ? selectedPSU.name
+                          .substring(0, isLandscape ? 37 : 57)
+                          .trim() + "..."
+                      : selectedPSU.name}
+                  </Text>
+                  <View style={styles.componentRating}>
+                    <StarRating rating={selectedPSU.rating} />
+                  </View>
+                  <Text style={styles.componentPrice}>
+                    €{selectedPSU.price}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.buttonsContainer}>
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="exchange-alt"
+                  buttonText={"Swap"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(parts)/(psu)",
+                    })
+                  }
+                  style={styles.actionButton}
+                />
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="trash"
+                  buttonText={"Delete"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={handleRemovePSU}
+                  style={styles.actionButton}
+                />
+              </View>
+              <View style={styles.bottomContainer}>
+                <Text
+                  style={styles.componentLink}
+                  onPress={() => Linking.openURL(selectedPSU.shop_URL)}
+                >
+                  Link
+                </Text>
+                <View style={styles.quantityContainer}>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="minus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handlePsuQuantityChange(-1)}
+                    style={styles.quantityButton}
+                  />
+                  <Text style={styles.quantityText}>x{psuQuantity}</Text>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="plus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handlePsuQuantityChange(1)}
+                    style={styles.quantityButton}
+                  />
+                </View>
+              </View>
+            </View>
+          );
+        }
+        return (
+          <PartsButton
+            title="Add PSU"
+            icon={require("../../assets/images/pc-parts-icons/psu.png")}
+            onPress={() =>
+              router.push({
+                pathname: "/(parts)/(psu)",
+              })
+            }
+          />
+        );
+
+      case "CASE":
+        if (selectedCase) {
+          return (
+            <View style={styles.selectedComponent}>
+              <View style={styles.partContainer}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: selectedCase.image_URL }}
+                    style={styles.image}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.componentInfo}>
+                  <Text style={styles.componentName}>
+                    {selectedCase.name.length > (isLandscape ? 40 : 60)
+                      ? selectedCase.name
+                          .substring(0, isLandscape ? 37 : 57)
+                          .trim() + "..."
+                      : selectedCase.name}
+                  </Text>
+                  <View style={styles.componentRating}>
+                    <StarRating rating={selectedCase.rating} />
+                  </View>
+                  <Text style={styles.componentPrice}>
+                    €{selectedCase.price}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.buttonsContainer}>
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="exchange-alt"
+                  buttonText={"Swap"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(parts)/(case)",
+                    })
+                  }
+                  style={styles.actionButton}
+                />
+                <AnimatedIconButton
+                  iconFamily="FontAwesome5"
+                  iconName="trash"
+                  buttonText={"Delete"}
+                  iconSize={16}
+                  initialBackgroundColor="#ffffff00"
+                  initialBorderColor="#ffffff4d"
+                  initialElevation={0}
+                  onPress={handleRemoveCase}
+                  style={styles.actionButton}
+                />
+              </View>
+              <View style={styles.bottomContainer}>
+                <Text
+                  style={styles.componentLink}
+                  onPress={() => Linking.openURL(selectedCase.shop_URL)}
+                >
+                  Link
+                </Text>
+                <View style={styles.quantityContainer}>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="minus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleCaseQuantityChange(-1)}
+                    style={styles.quantityButton}
+                  />
+                  <Text style={styles.quantityText}>x{caseQuantity}</Text>
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="plus"
+                    buttonText=""
+                    iconSize={12}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={() => handleCaseQuantityChange(1)}
+                    style={styles.quantityButton}
+                  />
+                </View>
+              </View>
+            </View>
+          );
+        }
+        return (
+          <PartsButton
+            title="Add Case"
+            icon={require("../../assets/images/pc-parts-icons/casebox.png")}
+            onPress={() =>
+              router.push({
+                pathname: "/(parts)/(case)",
+              })
+            }
+          />
+        );
     }
   };
 
   return (
     <SafeAreaView style={commonStyles.safeAreaView}>
-      <View>
-        <Text>Price: €{price}</Text>
-        <Text>Power: {tdp}W</Text>
-        <Text>{compatibility}</Text>
-      </View>
       <View style={styles.container}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={{
+            justifyContent: "space-around",
+          }}
+        >
+          <View style={styles.buildInfoContainer}>
+            <TextInput
+              style={styles.buildNameInput}
+              value={name}
+              onChangeText={(text) => {
+                EventEmitter.emit("buildNameChanged", text);
+              }}
+              placeholder="Build Name"
+              placeholderTextColor="#ffffff4d"
+              cursorColor={Colors.theme.orange}
+            />
+            <View style={styles.buildStatsContainer}>
+              <Text style={styles.buildStatsText}>Price: €{price}</Text>
+              <Text style={styles.buildStatsText}>Power: {tdp}W</Text>
+              <Text
+                style={[
+                  styles.buildStatsText,
+                  {
+                    color:
+                      compatibility === "Compatible" ? "#51ff00" : "#ff3300",
+                  },
+                ]}
+              >
+                {compatibility}
+              </Text>
+            </View>
+          </View>
           <View style={styles.buttonContainer}>
             {["CPU", "GPU", "RAM", "MOBO", "SSD", "COOLER", "PSU", "CASE"].map(
               (type) => (
@@ -212,6 +1110,62 @@ export default function Configurator() {
 }
 
 const styles = StyleSheet.create({
+  buildInfoContainer: {
+    padding: 16,
+    backgroundColor: "#757575ad",
+    borderRadius: 10,
+    width: "100%",
+  },
+  buildNameInput: {
+    color: Colors.theme.white,
+    fontSize: 24,
+    fontFamily: "RigBuilderFontBold",
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ffffff4d",
+    marginBottom: 16,
+  },
+  buildStatsContainer: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  buildStatsText: {
+    color: Colors.theme.white,
+    fontSize: 16,
+    fontFamily: "RigBuilderFont",
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  quantityButton: {
+    width: 30,
+    height: 30,
+  },
+  quantityText: {
+    color: Colors.theme.white,
+    fontSize: 16,
+    fontFamily: "RigBuilderFontBold",
+  },
+  componentLink: {
+    textDecorationLine: "underline",
+    color: Colors.theme.white,
+    borderWidth: 1,
+    borderColor: "#ffffffc9",
+    borderRadius: 10,
+    width: 40,
+    padding: 5,
+    textAlign: "center",
+  },
+  bottomContainer: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+  },
   imageContainer: {
     width: 80,
     height: 80,
@@ -231,6 +1185,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   buttonsContainer: {
+    width: "18.3%",
     flexDirection: "column",
     gap: 7,
   },
@@ -240,6 +1195,7 @@ const styles = StyleSheet.create({
   },
   selectedComponent: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "#757575e3",
@@ -284,6 +1240,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     width: "100%",
+    paddingVertical: 9,
   },
   buttonContainer: {
     padding: 10,
@@ -339,7 +1296,7 @@ const styles = StyleSheet.create({
 const commonStyles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
-    padding: 20,
+    padding: 10,
     alignItems: "center",
     backgroundColor: Colors.theme.darkgrey,
   },
