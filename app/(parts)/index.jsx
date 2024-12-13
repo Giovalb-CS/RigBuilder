@@ -27,13 +27,10 @@ export default function Configurator() {
 
   // Share states
   const [shareMode, setShareMode] = useState(false);
-  const [scrollHeight, setScrollHeight] = useState(0);
-  const scrollViewRef = useRef(null);
   const contentRef = useRef(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
   const [isCapturing, setIsCapturing] = useState(false);
-  const [contentHeight, setContentHeight] = useState(0);
 
+  // Share Handler
   const handleShare = async () => {
     try {
       setShareMode(true);
@@ -52,6 +49,41 @@ export default function Configurator() {
     } finally {
       setIsCapturing(false);
       setShareMode(false);
+    }
+  };
+
+  // Save handler
+  const handleSaveBuild = async () => {
+    try {
+      const buildConfiguration = {
+        name: name,
+        components: {
+          cpu: selectedCPU,
+          gpu: selectedGPU,
+          ram: selectedRAM,
+          mobo: selectedMOBO,
+          ssd: selectedSSD,
+          cooler: selectedCooler,
+          psu: selectedPSU,
+          case: selectedCase,
+        },
+        quantities: {
+          cpu: cpuQuantity,
+          gpu: gpuQuantity,
+          ram: ramQuantity,
+          mobo: moboQuantity,
+          ssd: ssdQuantity,
+          cooler: coolerQuantity,
+          psu: psuQuantity,
+          case: caseQuantity,
+        },
+      };
+      const jsonString = JSON.stringify(buildConfiguration, null, 2);
+      await AsyncStorage.setItem(`build_${Date.now()}`, jsonString);
+      Alert.alert("Success", "Build saved successfully!");
+    } catch (error) {
+      console.error("Error saving build:", error);
+      Alert.alert("Error", "Failed to save build");
     }
   };
 
@@ -85,7 +117,7 @@ export default function Configurator() {
   const [selectedCase, setSelectedCase] = useState(null);
   const [caseQuantity, setCaseQuantity] = useState(1);
 
-  // Handle incoming selected components
+  // Handlers delle componenti in arrivo selezionate
   useEffect(() => {
     const cpuHandler = (cpu) => {
       setSelectedCPU(cpu);
@@ -136,14 +168,48 @@ export default function Configurator() {
 
   // Handlers per edit Build
   useEffect(() => {
-    // Handler edit
+    // Handler edit nome
     const nameChangeHandler = (newName) => {
       setName(newName);
     };
-    // Handler edit da home
+    // Handler edit da home / apertura dalla home di una build
     const buildEditHandler = (buildData) => {
-      if (buildData?.name) {
-        setName(buildData.name);
+      try {
+        // Setta il nome se presente
+        if (buildData?.name) {
+          EventEmitter.emit("buildNameChanged", buildData.name);
+        }
+        // Setta i componenti se presenti
+        if (buildData?.components) {
+          const { components } = buildData;
+
+          if (components.cpu) {
+            EventEmitter.emit("cpuSelected", components.cpu);
+          }
+          if (components.gpu) {
+            EventEmitter.emit("gpuSelected", components.gpu);
+          }
+          if (components.ram) {
+            EventEmitter.emit("ramSelected", components.ram);
+          }
+          if (components.mobo) {
+            EventEmitter.emit("moboSelected", components.mobo);
+          }
+          if (components.ssd) {
+            EventEmitter.emit("ssdSelected", components.ssd);
+          }
+          if (components.cooler) {
+            EventEmitter.emit("coolerSelected", components.cooler);
+          }
+          if (components.psu) {
+            EventEmitter.emit("psuSelected", components.psu);
+          }
+          if (components.case) {
+            EventEmitter.emit("caseSelected", components.case);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading build configuration:", error);
       }
     };
 
@@ -190,7 +256,7 @@ export default function Configurator() {
     setCaseQuantity(1);
   };
 
-  // Quantity handlers
+  // Handlers per le quantita
   const handleCpuQuantityChange = (increment) => {
     setCpuQuantity((prev) => {
       const newQuantity = prev + increment;
@@ -1145,17 +1211,30 @@ export default function Configurator() {
             </Text>
           </View>
           {!shareMode && (
-            <AnimatedIconButton
-              iconFamily="FontAwesome5"
-              iconName="share-alt"
-              buttonText=""
-              iconSize={20}
-              initialBackgroundColor="#ffffff00"
-              initialBorderColor="#ffffff4d"
-              initialElevation={0}
-              onPress={handleShare}
-              style={styles.shareButton}
-            />
+            <>
+              <AnimatedIconButton
+                iconFamily="FontAwesome5"
+                iconName="share-alt"
+                buttonText=""
+                iconSize={20}
+                initialBackgroundColor="#ffffff00"
+                initialBorderColor="#ffffff4d"
+                initialElevation={0}
+                onPress={handleShare}
+                style={styles.shareButton}
+              />
+              <AnimatedIconButton
+                iconFamily="FontAwesome5"
+                iconName="save"
+                buttonText=""
+                iconSize={24}
+                initialBackgroundColor="#ffffff00"
+                initialBorderColor="#ffffff4d"
+                initialElevation={0}
+                onPress={handleSaveBuild}
+                style={styles.saveBuildButton}
+              />
+            </>
           )}
         </View>
         <View style={styles.buttonContainer}>
@@ -1200,10 +1279,17 @@ export default function Configurator() {
 }
 
 const styles = StyleSheet.create({
-  shareButton: {
+  saveBuildButton: {
     position: "absolute",
     right: 16,
-    top: 8,
+    top: 77,
+    width: 50,
+    height: 50,
+  },
+  shareButton: {
+    position: "absolute",
+    right: 70,
+    top: 77,
     width: 50,
     height: 50,
   },
@@ -1225,7 +1311,7 @@ const styles = StyleSheet.create({
   buildStatsContainer: {
     flexDirection: "column",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "left",
   },
   buildStatsText: {
     color: Colors.theme.white,

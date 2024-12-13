@@ -63,7 +63,7 @@ export default function AnimatedIconButton({
       >
         <Text style={styles.buttonText}>
           <IconComponent name={iconName} size={iconSize} color={iconColor} />
-          {"\n" + buttonText}
+          {buttonText !== "" ? "\n" + buttonText : ""}
         </Text>
       </Pressable>
     </Animated.View>
