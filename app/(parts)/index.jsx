@@ -9,6 +9,8 @@ import {
   useWindowDimensions,
   Linking,
   TextInput,
+  Alert,
+  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Colors from "../../constants/Colors";
@@ -19,16 +21,23 @@ import EventEmitter from "../../utils/EventEmitter";
 import StarRating from "../../components/StarRating";
 import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BackHandler, ToastAndroid } from "react-native";
 
 export default function Configurator() {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const [backPressedTime, setBackPressedTime] = useState(0);
 
   // Share states
   const [shareMode, setShareMode] = useState(false);
   const contentRef = useRef(null);
   const [isCapturing, setIsCapturing] = useState(false);
+
+  // Saving states
+  const [originalBuildId, setOriginalBuildId] = useState(null);
 
   // Share Handler
   const handleShare = async () => {
@@ -55,8 +64,13 @@ export default function Configurator() {
   // Save handler
   const handleSaveBuild = async () => {
     try {
-      const buildConfiguration = {
-        name: name,
+      if (originalBuildId) {
+        await AsyncStorage.removeItem(originalBuildId);
+        console.log("Deleted old build:", originalBuildId);
+      }
+
+      const buildConfig = {
+        name,
         components: {
           cpu: selectedCPU,
           gpu: selectedGPU,
@@ -77,13 +91,29 @@ export default function Configurator() {
           psu: psuQuantity,
           case: caseQuantity,
         },
+        savedAt: Date.now(),
       };
-      const jsonString = JSON.stringify(buildConfiguration, null, 2);
-      await AsyncStorage.setItem(`build_${Date.now()}`, jsonString);
-      Alert.alert("Success", "Build saved successfully!");
+
+      const buildId = `@buildConfig_${Date.now()}`;
+      const jsonValue = JSON.stringify(buildConfig);
+      await AsyncStorage.setItem(buildId, jsonValue);
+      console.log("Build salvata con successo", buildId);
+      router.back();
+    } catch (e) {
+      console.error("Errore durante il salvataggio", e);
+    }
+  };
+
+  // Delete handler
+  const handleDelete = async () => {
+    try {
+      if (originalBuildId) {
+        await AsyncStorage.removeItem(originalBuildId);
+        console.log("Build deleted:", originalBuildId);
+        router.back();
+      }
     } catch (error) {
-      console.error("Error saving build:", error);
-      Alert.alert("Error", "Failed to save build");
+      console.error("Error deleting build:", error);
     }
   };
 
@@ -117,7 +147,7 @@ export default function Configurator() {
   const [selectedCase, setSelectedCase] = useState(null);
   const [caseQuantity, setCaseQuantity] = useState(1);
 
-  // Handlers delle componenti in arrivo selezionate
+  // Handlers selezione componenti
   useEffect(() => {
     const cpuHandler = (cpu) => {
       setSelectedCPU(cpu);
@@ -166,63 +196,110 @@ export default function Configurator() {
     };
   }, []);
 
-  // Handlers per edit Build
+  // Handlers modifiche
   useEffect(() => {
-    // Handler edit nome
+    // Nome
     const nameChangeHandler = (newName) => {
       setName(newName);
     };
-    // Handler edit da home / apertura dalla home di una build
+
+    // Riapertura build
     const buildEditHandler = (buildData) => {
       try {
-        // Setta il nome se presente
-        if (buildData?.name) {
-          EventEmitter.emit("buildNameChanged", buildData.name);
+        if (buildData?.id) {
+          setOriginalBuildId(buildData.id);
         }
-        // Setta i componenti se presenti
-        if (buildData?.components) {
-          const { components } = buildData;
-
+        if (buildData?.name) {
+          setName(buildData.name);
+        }
+        if (buildData?.components && buildData?.quantities) {
+          const { components, quantities } = buildData;
           if (components.cpu) {
-            EventEmitter.emit("cpuSelected", components.cpu);
+            setSelectedCPU(components.cpu);
+            setCpuQuantity(quantities.cpu || 1);
           }
           if (components.gpu) {
-            EventEmitter.emit("gpuSelected", components.gpu);
+            setSelectedGPU(components.gpu);
+            setGpuQuantity(quantities.gpu || 1);
           }
           if (components.ram) {
-            EventEmitter.emit("ramSelected", components.ram);
+            setSelectedRAM(components.ram);
+            setRamQuantity(quantities.ram || 1);
           }
           if (components.mobo) {
-            EventEmitter.emit("moboSelected", components.mobo);
+            setSelectedMOBO(components.mobo);
+            setMoboQuantity(quantities.mobo || 1);
           }
           if (components.ssd) {
-            EventEmitter.emit("ssdSelected", components.ssd);
+            setSelectedSSD(components.ssd);
+            setSsdQuantity(quantities.ssd || 1);
           }
           if (components.cooler) {
-            EventEmitter.emit("coolerSelected", components.cooler);
+            setSelectedCooler(components.cooler);
+            setCoolerQuantity(quantities.cooler || 1);
           }
           if (components.psu) {
-            EventEmitter.emit("psuSelected", components.psu);
+            setSelectedPSU(components.psu);
+            setPsuQuantity(quantities.psu || 1);
           }
           if (components.case) {
-            EventEmitter.emit("caseSelected", components.case);
+            setSelectedCase(components.case);
+            setCaseQuantity(quantities.case || 1);
           }
         }
       } catch (error) {
-        console.error("Error loading build configuration:", error);
+        console.error("Error in buildEditHandler:", error);
       }
     };
+
+    // Parse dei dati dalla homepage
+    if (params.buildData) {
+      try {
+        const buildData = JSON.parse(params.buildData);
+        buildEditHandler(buildData);
+      } catch (error) {
+        console.error("Error parsing initial build data:", error);
+      }
+    }
 
     EventEmitter.on("buildNameChanged", nameChangeHandler);
     EventEmitter.on("buildEdit", buildEditHandler);
 
     return () => {
-      EventEmitter.events["buildNameChanged"] = [];
       EventEmitter.events["buildEdit"] = [];
+      EventEmitter.events["buildNameChanged"] = [];
     };
-  }, []);
+  }, [params.buildData]);
 
-  // Handlers per le rimozioni
+  // Handler indietro
+  useEffect(() => {
+    const backAction = () => {
+      if (backPressedTime === 0) {
+        setBackPressedTime(Date.now());
+        ToastAndroid.show("Press back again to exit", ToastAndroid.SHORT);
+        return true;
+      }
+
+      const now = Date.now();
+      if (now - backPressedTime < 2000) {
+        router.back();
+        return true;
+      }
+
+      setBackPressedTime(now);
+      ToastAndroid.show("Press back again to exit", ToastAndroid.SHORT);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [backPressedTime]);
+
+  // Handlers Bottoni Delete
   const handleRemoveCPU = () => {
     setSelectedCPU(null);
     setCpuQuantity(1);
@@ -256,7 +333,7 @@ export default function Configurator() {
     setCaseQuantity(1);
   };
 
-  // Handlers per le quantita
+  // Handlers Quantita
   const handleCpuQuantityChange = (increment) => {
     setCpuQuantity((prev) => {
       const newQuantity = prev + increment;
@@ -306,6 +383,7 @@ export default function Configurator() {
     });
   };
 
+  // Component render di una componente scelta, Share mode On e Off
   const renderPart = (type) => {
     switch (type) {
       case "CPU":
@@ -1182,78 +1260,91 @@ export default function Configurator() {
     }
   };
 
-  function Content() {
-    return (
-      <>
-        <View style={styles.buildInfoContainer}>
-          <TextInput
-            style={styles.buildNameInput}
-            value={name}
-            onChangeText={(text) => {
-              EventEmitter.emit("buildNameChanged", text);
-            }}
-            placeholder="Build Name"
-            placeholderTextColor="#ffffff4d"
-            cursorColor={Colors.theme.orange}
-          />
-          <View style={styles.buildStatsContainer}>
-            <Text style={styles.buildStatsText}>Price: €{price}</Text>
-            <Text style={styles.buildStatsText}>Power: {tdp}W</Text>
-            <Text
-              style={[
-                styles.buildStatsText,
-                {
-                  color: compatibility === "Compatible" ? "#51ff00" : "#ff3300",
-                },
-              ]}
-            >
-              {compatibility}
-            </Text>
-          </View>
-          {!shareMode && (
-            <>
-              <AnimatedIconButton
-                iconFamily="FontAwesome5"
-                iconName="share-alt"
-                buttonText=""
-                iconSize={20}
-                initialBackgroundColor="#ffffff00"
-                initialBorderColor="#ffffff4d"
-                initialElevation={0}
-                onPress={handleShare}
-                style={styles.shareButton}
-              />
-              <AnimatedIconButton
-                iconFamily="FontAwesome5"
-                iconName="save"
-                buttonText=""
-                iconSize={24}
-                initialBackgroundColor="#ffffff00"
-                initialBorderColor="#ffffff4d"
-                initialElevation={0}
-                onPress={handleSaveBuild}
-                style={styles.saveBuildButton}
-              />
-            </>
-          )}
-        </View>
-        <View style={styles.buttonContainer}>
-          {["CPU", "GPU", "RAM", "MOBO", "SSD", "COOLER", "PSU", "CASE"].map(
-            (type) => (
-              <View key={type}>{renderPart(type)}</View>
-            )
-          )}
-        </View>
-      </>
-    );
-  }
-
   return (
     <SafeAreaView style={commonStyles.safeAreaView}>
       <View style={styles.container}>
         {isCapturing ? (
           <View style={styles.scrollView} ref={contentRef} collapsable={false}>
-            <Content />
+            <View style={styles.buildInfoContainer}>
+              <TextInput
+                style={styles.buildNameInput}
+                value={name}
+                onChangeText={(text) => {
+                  EventEmitter.emit("buildNameChanged", text);
+                }}
+                placeholder="Build Name"
+                placeholderTextColor="#ffffff4d"
+                cursorColor={Colors.theme.orange}
+              />
+              <View style={styles.buildStatsContainer}>
+                <Text style={styles.buildStatsText}>Price: €{price}</Text>
+                <Text style={styles.buildStatsText}>Power: {tdp}W</Text>
+                <Text
+                  style={[
+                    styles.buildStatsText,
+                    {
+                      color:
+                        compatibility === "Compatible" ? "#51ff00" : "#ff3300",
+                    },
+                  ]}
+                >
+                  {compatibility}
+                </Text>
+              </View>
+              {!shareMode && (
+                <>
+                  {originalBuildId && (
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText=""
+                      iconSize={20}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleDelete}
+                      style={styles.deleteButton}
+                    />
+                  )}
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="share-alt"
+                    buttonText=""
+                    iconSize={20}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={handleShare}
+                    style={styles.shareButton}
+                  />
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="save"
+                    buttonText=""
+                    iconSize={24}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={handleSaveBuild}
+                    style={styles.saveBuildButton}
+                  />
+                </>
+              )}
+            </View>
+            <View style={styles.buttonContainer}>
+              {[
+                "CPU",
+                "GPU",
+                "RAM",
+                "MOBO",
+                "SSD",
+                "COOLER",
+                "PSU",
+                "CASE",
+              ].map((type) => (
+                <View key={type}>{renderPart(type)}</View>
+              ))}
+            </View>
           </View>
         ) : (
           <ScrollView
@@ -1262,7 +1353,86 @@ export default function Configurator() {
               justifyContent: "space-around",
             }}
           >
-            <Content />
+            <View style={styles.buildInfoContainer}>
+              <TextInput
+                style={styles.buildNameInput}
+                value={name}
+                onChangeText={(text) => {
+                  EventEmitter.emit("buildNameChanged", text);
+                }}
+                placeholder="Build Name"
+                placeholderTextColor="#ffffff4d"
+                cursorColor={Colors.theme.orange}
+              />
+              <View style={styles.buildStatsContainer}>
+                <Text style={styles.buildStatsText}>Price: €{price}</Text>
+                <Text style={styles.buildStatsText}>Power: {tdp}W</Text>
+                <Text
+                  style={[
+                    styles.buildStatsText,
+                    {
+                      color:
+                        compatibility === "Compatible" ? "#51ff00" : "#ff3300",
+                    },
+                  ]}
+                >
+                  {compatibility}
+                </Text>
+              </View>
+              {!shareMode && (
+                <>
+                  {originalBuildId && (
+                    <AnimatedIconButton
+                      iconFamily="FontAwesome5"
+                      iconName="trash"
+                      buttonText=""
+                      iconSize={20}
+                      initialBackgroundColor="#ffffff00"
+                      initialBorderColor="#ffffff4d"
+                      initialElevation={0}
+                      onPress={handleDelete}
+                      style={styles.deleteButton}
+                    />
+                  )}
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="share-alt"
+                    buttonText=""
+                    iconSize={20}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={handleShare}
+                    style={styles.shareButton}
+                  />
+                  <AnimatedIconButton
+                    iconFamily="FontAwesome5"
+                    iconName="save"
+                    buttonText=""
+                    iconSize={24}
+                    initialBackgroundColor="#ffffff00"
+                    initialBorderColor="#ffffff4d"
+                    initialElevation={0}
+                    onPress={handleSaveBuild}
+                    style={styles.saveBuildButton}
+                  />
+                </>
+              )}
+            </View>
+            <View style={styles.buttonContainer}>
+              {[
+                "CPU",
+                "GPU",
+                "RAM",
+                "MOBO",
+                "SSD",
+                "COOLER",
+                "PSU",
+                "CASE",
+              ].map((type) => (
+                <View key={type}>{renderPart(type)}</View>
+              ))}
+            </View>
           </ScrollView>
         )}
         <LinearGradient
@@ -1279,6 +1449,13 @@ export default function Configurator() {
 }
 
 const styles = StyleSheet.create({
+  deleteButton: {
+    position: "absolute",
+    right: 124,
+    top: 77,
+    width: 50,
+    height: 50,
+  },
   saveBuildButton: {
     position: "absolute",
     right: 16,

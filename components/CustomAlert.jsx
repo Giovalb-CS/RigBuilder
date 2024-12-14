@@ -37,12 +37,15 @@ const CustomAlert = ({ visible, title, message, buttons, onClose }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 1000,
   },
   alertContainer: {
     width: "80%",
+    maxWidth: 400,
+    marginHorizontal: 20,
     backgroundColor: Colors.popup.background,
     borderRadius: 10,
     padding: 20,
@@ -79,12 +82,16 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
+    marginTop: 10,
+    gap: 10,
   },
   button: {
+    flex: 1,
     backgroundColor: Colors.theme.orange,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
+    alignItems: "center",
   },
   buttonText: {
     color: Colors.theme.white,

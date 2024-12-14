@@ -3,6 +3,7 @@
     "name": "RigBuilder",
     "slug": "RigBuilder",
     "version": "1.0.0",
+    "package":"com.rigbuilder.app",
     "orientation": "default",
     "icon": "./assets/images/RigBuilder_Logo_OS.png",
     "scheme": "myapp",
@@ -28,7 +29,14 @@
         "keyboardHidden",
         "orientation",
         "screenSize"
-      ]
+      ],
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.MANAGE_EXTERNAL_STORAGE",
+        "android.permission.MEDIA_LIBRARY"
+      ],
+      "icon": "./assets/images/RigBuilder_Logo_OS.png"
     },
     "web": {
       "bundler": "metro",
