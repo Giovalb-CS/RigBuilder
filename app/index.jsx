@@ -14,7 +14,7 @@ import { useRouter } from "expo-router";
 import Colors from "../constants/Colors";
 import AnimatedIconButton from "../components/AnimatedIconButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -68,7 +68,7 @@ export default function HomeScreen() {
           });
         }}
       >
-        <View>
+        <View style={styles.buildInfo}>
           <Text style={pageStyles.buildName}>{item.name}</Text>
           <Text style={pageStyles.buildDate}>
             {new Date(item.savedAt).toLocaleDateString()}
@@ -113,7 +113,14 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={commonStyles.safeAreaView}>
-      <Text style={pageStyles.title}>Your Builds</Text>
+      <Text style={pageStyles.title}>
+        <FontAwesome6
+          name="screwdriver-wrench"
+          size={24}
+          color={Colors.theme.orange}
+        />
+        {" Your Builds"}
+      </Text>
 
       <View style={styles.listContainer}>
         <FlatList
@@ -139,8 +146,9 @@ export default function HomeScreen() {
       <View style={styles.warningContainer}>
         <Ionicons name="warning-outline" size={28} color={"#9c9c9cb7"} />
         <Text style={styles.noticeText}>
-          Note: Data may not always be up-to-date. Please double-check before
-          making any purchases.
+          {
+            "Note: Data may not always be up-to-date. Please double-check before making any purchases."
+          }
         </Text>
       </View>
 
@@ -156,6 +164,9 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  buildInfo: {
+    width: "auto",
+  },
   listContainer: {
     flex: 1,
     position: "relative",
@@ -218,8 +229,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   imagesScroll: {
-    height: "auto",
-    marginLeft: 10,
+    flex: 1,
   },
   componentImage: {
     width: 30,
@@ -244,10 +254,7 @@ const pageStyles = StyleSheet.create({
     padding: 10,
   },
   buildItem: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: "column",
     backgroundColor: "#757575ad",
     borderWidth: 1,
     borderColor: "#ffffffc9",
@@ -255,6 +262,7 @@ const pageStyles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     marginBottom: 10,
+    gap: 10,
   },
   buildName: {
     color: "#fff",

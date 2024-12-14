@@ -1484,6 +1484,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ffffff4d",
     marginBottom: 16,
+    maxHeight: 49,
   },
   buildStatsContainer: {
     flexDirection: "column",
