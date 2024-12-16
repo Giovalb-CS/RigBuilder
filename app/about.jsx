@@ -1,14 +1,36 @@
-import { View, Text, Button, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  Linking,
+} from "react-native";
 import { useRouter } from "expo-router";
 import Colors from "../constants/Colors";
-import { FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
+import AnimatedLogo from "../components/AnimatedLogo";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function AboutScreen() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={{ paddingVertical: 50 }}
+      >
+        <View
+          style={[
+            styles.animatedLogoContainer,
+            { transform: [{ translateY: -50 }] },
+          ]}
+        >
+          <AnimatedLogo width={200} height={200} />
+        </View>
+
         <View style={styles.icon}>
           <FontAwesome5
             name="info-circle"
@@ -57,17 +79,167 @@ export default function AboutScreen() {
           </Text>
 
           <Text style={styles.paragraphTitle}>Development</Text>
-          <Text style={styles.aboutText}>a</Text>
+          <Text style={styles.aboutText}>
+            RigBuilder was developed using React Native for a fluid and
+            multiplatform user experience, and Expo framework for a fast
+            prototyping and deployment. The app uses the AsyncStorage API to
+            store configurations on the device.
+          </Text>
+          <Text style={styles.aboutText}>
+            The data displayed in the app is fetched from the server via
+            endpoints of the REST API. The server also hosts the administrator
+            dashboard for managing the hardware components. Originally, data was
+            fetched from PCPartPicker website via some python web scraper
+            scripts. There were some problems with the scrapers, so the scripts
+            were modified to fetch the correct informations to save into the
+            server database. Web scraping is not illegal, but it often violates
+            the terms of service of the website being scraped, PCPartPicker in
+            this case. RigBuilder is not affiliated with PCPartPicker.
+          </Text>
+
+          <Text style={styles.paragraphTitle}>Project context</Text>
+          <Text style={styles.aboutText}>
+            This project was realized as part of my thesis in Computer Science
+            at the University of Salerno. It represents an important milestone
+            in my academic journey and allowed me to put into practice the
+            skills acquired during my degree, especially in mobile development,
+            user interface design, and graphics.
+          </Text>
+
+          <Text style={styles.paragraphTitle}>Future expansions</Text>
+          <Text style={styles.aboutText}>
+            In the future, RigBuilder could include features{"\n"}
+            <Text style={styles.subHeader}>such as:</Text>
+          </Text>
+          <View style={styles.bulletList}>
+            <Text style={styles.bulletPoint}>
+              • Automatic build configurations based on a price budget and user
+              preferences
+            </Text>
+            <Text style={styles.bulletPoint}>
+              • Advanced configuration support, such as RAID and SLI
+            </Text>
+            <Text style={styles.bulletPoint}>
+              • More component types and peripherals, such as monitors, audio
+              cards, network cards, monitors, mouses, keyboards, custom water
+              loops, etc...
+            </Text>
+            <Text style={styles.bulletPoint}>
+              • Integration and collaborations with online or local stores to
+              purchase components
+            </Text>
+          </View>
+
+          <Text style={styles.paragraphTitle}>Contacts</Text>
+          <Text style={styles.aboutText}>
+            For any questions, feedback, or collaboration proposals, you can
+            contact me at the following email address:
+          </Text>
+          <Text
+            style={[styles.aboutText, styles.email]}
+            onPress={() =>
+              Linking.openURL("mailto:giovanni.bonacci.cs@gmail.com")
+            }
+          >
+            giovanni.bonacci.cs@gmail.com
+          </Text>
+          <Text style={styles.aboutText}>
+            or visit my social profiles on LinkedIn and GitHub:
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              justifyContent: "center",
+            }}
+          >
+            <FontAwesome5
+              name="linkedin"
+              size={26}
+              color={Colors.theme.white}
+              onPress={() =>
+                Linking.openURL(
+                  "https://www.linkedin.com/in/giovanni-alberico-bonacci-429933311/"
+                )
+              }
+              style={styles.social}
+            />
+            <FontAwesome5
+              name="github"
+              size={26}
+              color={Colors.theme.white}
+              onPress={() => Linking.openURL("https://github.com/Giovalb-CS")}
+              style={styles.social}
+            />
+          </View>
+        </View>
+
+        <View style={styles.animatedLogoContainer}>
+          <AnimatedLogo width={300} height={300} />
+        </View>
+
+        <View style={{ alignItems: "center" }}>
+          <Text
+            style={{
+              textAlign: "center",
+              fontFamily: "RigBuilderFont",
+              color: "#8f8f8f",
+            }}
+          >
+            © 2024 RigBuilder. All rights reserved.
+          </Text>
         </View>
       </ScrollView>
-    </View>
+      <LinearGradient
+        colors={[Colors.theme.darkgrey, "transparent"]}
+        style={styles.topFade}
+      />
+      <LinearGradient
+        colors={["transparent", Colors.theme.darkgrey]}
+        style={styles.bottomFade}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  topFade: {
+    position: "absolute",
+    top: 9,
+    left: 0,
+    right: 0,
+    height: 20,
+    zIndex: 100,
+  },
+  bottomFade: {
+    position: "absolute",
+    bottom: 55,
+    left: 0,
+    right: 0,
+    height: 20,
+    zIndex: 100,
+  },
+  animatedLogoContainer: {},
+  social: {
+    padding: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ffffffc9",
+  },
+  email: {
+    textDecorationLine: "underline",
+    color: Colors.theme.orange,
+    fontFamily: "RigBuilderFontBold",
+    fontSize: 16,
+    textAlign: "center",
+    width: 280,
+    margin: "auto",
+  },
   container: {
     flex: 1,
     backgroundColor: Colors.theme.darkgrey,
+    padding: 10,
   },
   scrollView: {
     flex: 1,
@@ -78,7 +250,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     alignItems: "left",
-    padding: 18,
+    paddingLeft: 15,
   },
   aboutText: {
     color: Colors.theme.white,
