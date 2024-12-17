@@ -14,7 +14,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Colors from "../../../constants/Colors";
 import Constants from "expo-constants";
-import SelectableCPU from "../../../components/parts/SelectableCPU";
+import SelectableSSD from "../../../components/parts/SelectableSSD";
 import { LinearGradient } from "expo-linear-gradient";
 import ScrollToTopButton from "../../../components/ScrollToTopButton";
 import AnimatedIconButton from "../../../components/AnimatedIconButton";
@@ -22,7 +22,7 @@ import { Picker } from "@react-native-picker/picker";
 import { AnimatedFlashList } from "@shopify/flash-list";
 import { FontAwesome5 } from "@expo/vector-icons";
 
-export default function CPUScreen() {
+export default function SSDScreen() {
   const { API_URL, API_KEY } = Constants.expoConfig.extra;
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -30,15 +30,15 @@ export default function CPUScreen() {
   const isLandscape = width > height;
   const [error, setError] = useState(null);
 
-  const [cpus, setCPUs] = useState(null);
-  const [sockets, setSockets] = useState([]);
-  const [ramTypes, setRamTypes] = useState([]);
+  const [ssds, setSSDs] = useState(null);
+  const [pcieGens, setPCIeGens] = useState([]);
+  const [capacities, setCapacities] = useState([]);
 
   const [nameFilter, setNameFilter] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [selectedSocket, setSelectedSocket] = useState(params.socket || "");
-  const [selectedRamType, setSelectedRamType] = useState(params.ramType || "");
+  const [selectedPCIeGen, setSelectedPCIeGen] = useState("");
+  const [selectedCapacity, setSelectedCapacity] = useState("");
   const [minRating, setMinRating] = useState("");
   const [maxRating, setMaxRating] = useState("");
 
@@ -57,9 +57,9 @@ export default function CPUScreen() {
     }).start();
   };
 
-  const getCPU = async () => {
+  const getSSD = async () => {
     try {
-      const response = await fetch(API_URL + "/processors", {
+      const response = await fetch(API_URL + "/ssds", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -72,28 +72,28 @@ export default function CPUScreen() {
       }
 
       const data = await response.json();
-      setCPUs(data.processors);
-      setSockets(data.sockets);
-      setRamTypes(data.ramTypes);
+      setSSDs(data.ssds);
+      setPCIeGens(data.pcie_gens);
+      setCapacities(data.capacities);
     } catch (err) {
       setError(err.message);
-      console.error("Error fetching CPU data:", err);
+      console.error("Error fetching SSD data:", err);
     }
   };
 
-  const postCPU = async () => {
+  const postSSD = async () => {
     try {
-      setCPUs(null);
+      setSSDs(null);
       const filters = {
         ...(minPrice && { minPrice }),
         ...(maxPrice && { maxPrice }),
-        ...(selectedSocket && { socket: selectedSocket }),
-        ...(selectedRamType && { ramType: selectedRamType }),
+        ...(selectedPCIeGen && { pcie_gen: selectedPCIeGen }),
+        ...(selectedCapacity && { capacity: selectedCapacity }),
         ...(minRating && { minRating }),
         ...(maxRating && { maxRating }),
       };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/ssds/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,9 +105,9 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
-      setSockets(data.sockets);
-      setRamTypes(data.ramTypes);
+      setSSDs(data.ssds);
+      setPCIeGens(data.pcie_gens);
+      setCapacities(data.capacities);
     } catch (err) {
       setError(err.message);
       console.error("Error applying advanced filters:", err);
@@ -115,18 +115,13 @@ export default function CPUScreen() {
   };
 
   useEffect(() => {
-    console.log("Initial params:", params);
-    if (params.socket || params.ramType) {
-      postCPU();
-    } else {
-      getCPU();
-    }
+    getSSD();
   }, []);
 
   const handleNameSearch = async () => {
     try {
-      setCPUs(null);
-      const response = await fetch(API_URL + "/processors/filters", {
+      setSSDs(null);
+      const response = await fetch(API_URL + "/ssds/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +133,7 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
+      setSSDs(data.ssds);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -148,11 +143,11 @@ export default function CPUScreen() {
 
   const handleSortChange = async (type, direction) => {
     try {
-      setCPUs(null);
+      setSSDs(null);
       const params =
         type === "price" ? { priceSort: direction } : { ratingSort: direction };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/ssds/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +159,7 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
+      setSSDs(data.ssds);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -174,17 +169,17 @@ export default function CPUScreen() {
 
   const handleAdvancedSearch = async () => {
     try {
-      setCPUs(null);
+      setSSDs(null);
       const filters = {
         ...(minPrice && { minPrice }),
         ...(maxPrice && { maxPrice }),
-        ...(selectedSocket && { socket: selectedSocket }),
-        ...(selectedRamType && { ramType: selectedRamType }),
+        ...(selectedPCIeGen && { pcie_gen: selectedPCIeGen }),
+        ...(selectedCapacity && { capacity: selectedCapacity }),
         ...(minRating && { minRating }),
         ...(maxRating && { maxRating }),
       };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/ssds/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,9 +191,9 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
-      setSockets(data.sockets);
-      setRamTypes(data.ramTypes);
+      setSSDs(data.ssds);
+      setPCIeGens(data.pcie_gens);
+      setCapacities(data.capacities);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -207,15 +202,15 @@ export default function CPUScreen() {
   };
 
   const handleReset = () => {
-    setCPUs(null);
+    setSSDs(null);
     setNameFilter("");
     setMinPrice("");
     setMaxPrice("");
-    setSelectedSocket("");
-    setSelectedRamType("");
+    setSelectedPCIeGen("");
+    setSelectedCapacity("");
     setMinRating("");
     setMaxRating("");
-    getCPU().then(() => {
+    getSSD().then(() => {
       toggleFilters();
     });
   };
@@ -256,7 +251,7 @@ export default function CPUScreen() {
           <View style={[{ width: "100%" }, styles.filterSection]}>
             <TextInput
               cursorColor={Colors.theme.orange}
-              placeholder="Enter a cpu brand or model"
+              placeholder="Enter a ssd brand or model"
               value={nameFilter}
               onChangeText={setNameFilter}
               style={[
@@ -386,37 +381,43 @@ export default function CPUScreen() {
                 }
               />
               <View style={[styles.selectContainer]}>
-                {/* <Text style={styles.selectLabel}>Socket:</Text> */}
                 <View style={styles.pickerContainer}>
                   <Picker
-                    selectedValue={selectedSocket}
-                    onValueChange={setSelectedSocket}
+                    selectedValue={selectedPCIeGen}
+                    onValueChange={setSelectedPCIeGen}
                     style={styles.picker}
-                    onPressIn={() => setFocusedInput("socket")}
+                    onPressIn={() => setFocusedInput("pcie_gen")}
                     onEndEditing={() => setFocusedInput(null)}
                     dropdownIconColor={Colors.theme.white}
                   >
-                    <Picker.Item label="Socket" value="" />
-                    {sockets.map((socket) => (
-                      <Picker.Item key={socket} label={socket} value={socket} />
+                    <Picker.Item label="PCIe gen" value="" />
+                    {pcieGens.map((pcie_gen) => (
+                      <Picker.Item
+                        key={pcie_gen}
+                        label={pcie_gen}
+                        value={pcie_gen}
+                      />
                     ))}
                   </Picker>
                 </View>
               </View>
               <View style={styles.selectContainer}>
-                {/* <Text style={styles.selectLabel}>RAM Type:</Text> */}
                 <View style={styles.pickerContainer}>
                   <Picker
-                    selectedValue={selectedRamType}
-                    onValueChange={setSelectedRamType}
+                    selectedValue={selectedCapacity}
+                    onValueChange={setSelectedCapacity}
                     style={styles.picker}
-                    onPressIn={() => setFocusedInput("ramType")}
+                    onPressIn={() => setFocusedInput("capacity")}
                     onEndEditing={() => setFocusedInput(null)}
                     dropdownIconColor={Colors.theme.white}
                   >
-                    <Picker.Item label="RAM Type" value="" />
-                    {ramTypes.map((type) => (
-                      <Picker.Item key={type} label={type} value={type} />
+                    <Picker.Item label="Capacity" value="" />
+                    {capacities.map((capacity) => (
+                      <Picker.Item
+                        key={capacity}
+                        label={capacity}
+                        value={capacity}
+                      />
                     ))}
                   </Picker>
                 </View>
@@ -501,7 +502,7 @@ export default function CPUScreen() {
           color={Colors.theme.orange}
           style={styles.emptyIcon}
         />
-        <Text style={styles.emptyText}>No CPUs found</Text>
+        <Text style={styles.emptyText}>No SSDs found</Text>
         <Text style={styles.emptySubText}>
           Try adjusting your search filters
         </Text>
@@ -514,13 +515,13 @@ export default function CPUScreen() {
       <View style={styles.container}>
         {error ? (
           <Text style={styles.error}>Error: {error}</Text>
-        ) : cpus ? (
+        ) : ssds ? (
           <>
             <AnimatedFlashList
               ref={scrollViewRef}
-              data={cpus}
+              data={ssds}
               estimatedItemSize={200}
-              renderItem={({ item }) => <SelectableCPU part={item} />}
+              renderItem={({ item }) => <SelectableSSD part={item} />}
               contentContainerStyle={styles.scrollContent}
               onScroll={Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -537,7 +538,7 @@ export default function CPUScreen() {
         ) : (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.theme.orange} />
-            <Text style={styles.loadingText}>Loading CPU data...</Text>
+            <Text style={styles.loadingText}>Loading SSD data...</Text>
           </View>
         )}
         <ScrollToTopButton

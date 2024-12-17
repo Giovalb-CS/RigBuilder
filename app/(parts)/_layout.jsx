@@ -27,6 +27,48 @@ export default function ConfiguratorLayout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="(gpu)"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="(ram)"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="(ssd)"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="(mobo)"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="(cooler)"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="(psu)"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="(case)"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </>
   );

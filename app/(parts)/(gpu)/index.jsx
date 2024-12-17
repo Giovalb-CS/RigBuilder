@@ -14,7 +14,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Colors from "../../../constants/Colors";
 import Constants from "expo-constants";
-import SelectableCPU from "../../../components/parts/SelectableCPU";
+import SelectableGPU from "../../../components/parts/SelectableGPU";
 import { LinearGradient } from "expo-linear-gradient";
 import ScrollToTopButton from "../../../components/ScrollToTopButton";
 import AnimatedIconButton from "../../../components/AnimatedIconButton";
@@ -22,7 +22,7 @@ import { Picker } from "@react-native-picker/picker";
 import { AnimatedFlashList } from "@shopify/flash-list";
 import { FontAwesome5 } from "@expo/vector-icons";
 
-export default function CPUScreen() {
+export default function GPUScreen() {
   const { API_URL, API_KEY } = Constants.expoConfig.extra;
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -30,15 +30,15 @@ export default function CPUScreen() {
   const isLandscape = width > height;
   const [error, setError] = useState(null);
 
-  const [cpus, setCPUs] = useState(null);
-  const [sockets, setSockets] = useState([]);
-  const [ramTypes, setRamTypes] = useState([]);
+  const [gpus, setGPUs] = useState(null);
+  const [memoryTypes, setMemoryTypes] = useState([]);
 
   const [nameFilter, setNameFilter] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [selectedSocket, setSelectedSocket] = useState(params.socket || "");
-  const [selectedRamType, setSelectedRamType] = useState(params.ramType || "");
+  const [selectedMemoryType, setSelectedMemoryType] = useState("");
+  const [maxSlotWidth, setMaxSlotWidth] = useState(params.maxSlotWidth || "");
+  const [maxLenght, setMaxLenght] = useState(params.maxLenght || "");
   const [minRating, setMinRating] = useState("");
   const [maxRating, setMaxRating] = useState("");
 
@@ -57,9 +57,9 @@ export default function CPUScreen() {
     }).start();
   };
 
-  const getCPU = async () => {
+  const getGPU = async () => {
     try {
-      const response = await fetch(API_URL + "/processors", {
+      const response = await fetch(API_URL + "/gpus", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -72,28 +72,28 @@ export default function CPUScreen() {
       }
 
       const data = await response.json();
-      setCPUs(data.processors);
-      setSockets(data.sockets);
-      setRamTypes(data.ramTypes);
+      setGPUs(data.gpus);
+      setMemoryTypes(data.memoryTypes);
     } catch (err) {
       setError(err.message);
-      console.error("Error fetching CPU data:", err);
+      console.error("Error fetching GPU data:", err);
     }
   };
 
-  const postCPU = async () => {
+  const postGPU = async () => {
     try {
-      setCPUs(null);
+      setGPUs(null);
       const filters = {
         ...(minPrice && { minPrice }),
         ...(maxPrice && { maxPrice }),
-        ...(selectedSocket && { socket: selectedSocket }),
-        ...(selectedRamType && { ramType: selectedRamType }),
+        ...(selectedMemoryType && { memoryType: selectedMemoryType }),
+        ...(maxSlotWidth && { maxSlotWidth }),
+        ...(maxLenght && { maxLenght }),
         ...(minRating && { minRating }),
         ...(maxRating && { maxRating }),
       };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/gpus/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,9 +105,7 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
-      setSockets(data.sockets);
-      setRamTypes(data.ramTypes);
+      setGPUs(data.gpus);
     } catch (err) {
       setError(err.message);
       console.error("Error applying advanced filters:", err);
@@ -116,17 +114,17 @@ export default function CPUScreen() {
 
   useEffect(() => {
     console.log("Initial params:", params);
-    if (params.socket || params.ramType) {
-      postCPU();
+    if (params.maxSlotWidth || params.maxLenght) {
+      postGPU();
     } else {
-      getCPU();
+      getGPU();
     }
   }, []);
 
   const handleNameSearch = async () => {
     try {
-      setCPUs(null);
-      const response = await fetch(API_URL + "/processors/filters", {
+      setGPUs(null);
+      const response = await fetch(API_URL + "/gpus/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +136,7 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
+      setGPUs(data.gpus);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -148,11 +146,11 @@ export default function CPUScreen() {
 
   const handleSortChange = async (type, direction) => {
     try {
-      setCPUs(null);
+      setGPUs(null);
       const params =
         type === "price" ? { priceSort: direction } : { ratingSort: direction };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/gpus/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +162,7 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
+      setGPUs(data.gpus);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -174,17 +172,18 @@ export default function CPUScreen() {
 
   const handleAdvancedSearch = async () => {
     try {
-      setCPUs(null);
+      setGPUs(null);
       const filters = {
         ...(minPrice && { minPrice }),
         ...(maxPrice && { maxPrice }),
-        ...(selectedSocket && { socket: selectedSocket }),
-        ...(selectedRamType && { ramType: selectedRamType }),
+        ...(selectedMemoryType && { memoryType: selectedMemoryType }),
+        ...(maxSlotWidth && { maxSlotWidth }),
+        ...(maxLenght && { maxLenght }),
         ...(minRating && { minRating }),
         ...(maxRating && { maxRating }),
       };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/gpus/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,9 +195,7 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
-      setSockets(data.sockets);
-      setRamTypes(data.ramTypes);
+      setGPUs(data.gpus);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -207,15 +204,16 @@ export default function CPUScreen() {
   };
 
   const handleReset = () => {
-    setCPUs(null);
+    setGPUs(null);
     setNameFilter("");
     setMinPrice("");
     setMaxPrice("");
-    setSelectedSocket("");
-    setSelectedRamType("");
+    setSelectedMemoryType("");
+    setMaxSlotWidth("");
+    setMaxLenght("");
     setMinRating("");
     setMaxRating("");
-    getCPU().then(() => {
+    getGPU().then(() => {
       toggleFilters();
     });
   };
@@ -256,7 +254,7 @@ export default function CPUScreen() {
           <View style={[{ width: "100%" }, styles.filterSection]}>
             <TextInput
               cursorColor={Colors.theme.orange}
-              placeholder="Enter a cpu brand or model"
+              placeholder="Enter a gpu brand or model"
               value={nameFilter}
               onChangeText={setNameFilter}
               style={[
@@ -385,42 +383,63 @@ export default function CPUScreen() {
                   focusedInput === "maxPrice" ? Colors.theme.white : "#ffffff4d"
                 }
               />
-              <View style={[styles.selectContainer]}>
-                {/* <Text style={styles.selectLabel}>Socket:</Text> */}
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={selectedSocket}
-                    onValueChange={setSelectedSocket}
-                    style={styles.picker}
-                    onPressIn={() => setFocusedInput("socket")}
-                    onEndEditing={() => setFocusedInput(null)}
-                    dropdownIconColor={Colors.theme.white}
-                  >
-                    <Picker.Item label="Socket" value="" />
-                    {sockets.map((socket) => (
-                      <Picker.Item key={socket} label={socket} value={socket} />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
               <View style={styles.selectContainer}>
-                {/* <Text style={styles.selectLabel}>RAM Type:</Text> */}
                 <View style={styles.pickerContainer}>
                   <Picker
-                    selectedValue={selectedRamType}
-                    onValueChange={setSelectedRamType}
+                    selectedValue={selectedMemoryType}
+                    onValueChange={setSelectedMemoryType}
                     style={styles.picker}
-                    onPressIn={() => setFocusedInput("ramType")}
+                    onPressIn={() => setFocusedInput("memoryType")}
                     onEndEditing={() => setFocusedInput(null)}
                     dropdownIconColor={Colors.theme.white}
                   >
-                    <Picker.Item label="RAM Type" value="" />
-                    {ramTypes.map((type) => (
+                    <Picker.Item label="Memory Type" value="" />
+                    {memoryTypes.map((type) => (
                       <Picker.Item key={type} label={type} value={type} />
                     ))}
                   </Picker>
                 </View>
               </View>
+              <TextInput
+                cursorColor={Colors.theme.orange}
+                placeholder="Max Slot Width"
+                value={maxSlotWidth}
+                onChangeText={setMaxSlotWidth}
+                keyboardType="numeric"
+                style={[
+                  styles.input,
+                  focusedInput === "maxSlotWidth" && {
+                    borderColor: Colors.theme.orange,
+                  },
+                ]}
+                onPressIn={() => setFocusedInput("maxSlotWidth")}
+                onEndEditing={() => setFocusedInput(null)}
+                placeholderTextColor={
+                  focusedInput === "maxSlotWidth"
+                    ? Colors.theme.white
+                    : "#ffffff4d"
+                }
+              />
+              <TextInput
+                cursorColor={Colors.theme.orange}
+                placeholder="Max Lenght"
+                value={maxLenght}
+                onChangeText={setMaxLenght}
+                keyboardType="numeric"
+                style={[
+                  styles.input,
+                  focusedInput === "maxLenght" && {
+                    borderColor: Colors.theme.orange,
+                  },
+                ]}
+                onPressIn={() => setFocusedInput("maxLenght")}
+                onEndEditing={() => setFocusedInput(null)}
+                placeholderTextColor={
+                  focusedInput === "maxLenght"
+                    ? Colors.theme.white
+                    : "#ffffff4d"
+                }
+              />
               <TextInput
                 cursorColor={Colors.theme.orange}
                 placeholder="Min Rating"
@@ -501,7 +520,7 @@ export default function CPUScreen() {
           color={Colors.theme.orange}
           style={styles.emptyIcon}
         />
-        <Text style={styles.emptyText}>No CPUs found</Text>
+        <Text style={styles.emptyText}>No GPUs found</Text>
         <Text style={styles.emptySubText}>
           Try adjusting your search filters
         </Text>
@@ -514,13 +533,13 @@ export default function CPUScreen() {
       <View style={styles.container}>
         {error ? (
           <Text style={styles.error}>Error: {error}</Text>
-        ) : cpus ? (
+        ) : gpus ? (
           <>
             <AnimatedFlashList
               ref={scrollViewRef}
-              data={cpus}
+              data={gpus}
               estimatedItemSize={200}
-              renderItem={({ item }) => <SelectableCPU part={item} />}
+              renderItem={({ item }) => <SelectableGPU part={item} />}
               contentContainerStyle={styles.scrollContent}
               onScroll={Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -537,7 +556,7 @@ export default function CPUScreen() {
         ) : (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.theme.orange} />
-            <Text style={styles.loadingText}>Loading CPU data...</Text>
+            <Text style={styles.loadingText}>Loading GPU data...</Text>
           </View>
         )}
         <ScrollToTopButton

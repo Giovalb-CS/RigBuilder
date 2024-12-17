@@ -14,7 +14,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Colors from "../../../constants/Colors";
 import Constants from "expo-constants";
-import SelectableCPU from "../../../components/parts/SelectableCPU";
+import SelectableMOBO from "../../../components/parts/SelectableMOBO";
 import { LinearGradient } from "expo-linear-gradient";
 import ScrollToTopButton from "../../../components/ScrollToTopButton";
 import AnimatedIconButton from "../../../components/AnimatedIconButton";
@@ -22,7 +22,7 @@ import { Picker } from "@react-native-picker/picker";
 import { AnimatedFlashList } from "@shopify/flash-list";
 import { FontAwesome5 } from "@expo/vector-icons";
 
-export default function CPUScreen() {
+export default function MOBOScreen() {
   const { API_URL, API_KEY } = Constants.expoConfig.extra;
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -30,15 +30,19 @@ export default function CPUScreen() {
   const isLandscape = width > height;
   const [error, setError] = useState(null);
 
-  const [cpus, setCPUs] = useState(null);
+  const [mobos, setMOBOs] = useState(null);
   const [sockets, setSockets] = useState([]);
+  const [chipsets, setChipsets] = useState([]);
   const [ramTypes, setRamTypes] = useState([]);
+  const [formFactors, setFormFactors] = useState([]);
 
   const [nameFilter, setNameFilter] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [selectedSocket, setSelectedSocket] = useState(params.socket || "");
+  const [selectedChipset, setSelectedChipset] = useState("");
   const [selectedRamType, setSelectedRamType] = useState(params.ramType || "");
+  const [selectedFormFactor, setSelectedFormFactor] = useState("");
   const [minRating, setMinRating] = useState("");
   const [maxRating, setMaxRating] = useState("");
 
@@ -57,9 +61,9 @@ export default function CPUScreen() {
     }).start();
   };
 
-  const getCPU = async () => {
+  const getMOBO = async () => {
     try {
-      const response = await fetch(API_URL + "/processors", {
+      const response = await fetch(API_URL + "/motherboards", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -72,28 +76,32 @@ export default function CPUScreen() {
       }
 
       const data = await response.json();
-      setCPUs(data.processors);
+      setMOBOs(data.motherboards);
       setSockets(data.sockets);
+      setChipsets(data.chipsets);
       setRamTypes(data.ramTypes);
+      setFormFactors(data.formFactors);
     } catch (err) {
       setError(err.message);
-      console.error("Error fetching CPU data:", err);
+      console.error("Error fetching MOBO data:", err);
     }
   };
 
-  const postCPU = async () => {
+  const postMOBO = async () => {
     try {
-      setCPUs(null);
+      setMOBOs(null);
       const filters = {
         ...(minPrice && { minPrice }),
         ...(maxPrice && { maxPrice }),
         ...(selectedSocket && { socket: selectedSocket }),
+        ...(selectedChipset && { chipset: selectedChipset }),
         ...(selectedRamType && { ramType: selectedRamType }),
+        ...(selectedFormFactor && { formFactor: selectedFormFactor }),
         ...(minRating && { minRating }),
         ...(maxRating && { maxRating }),
       };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/motherboards/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,9 +113,11 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
+      setMOBOs(data.motherboards);
       setSockets(data.sockets);
+      setChipsets(data.chipsets);
       setRamTypes(data.ramTypes);
+      setFormFactors(data.formFactors);
     } catch (err) {
       setError(err.message);
       console.error("Error applying advanced filters:", err);
@@ -117,16 +127,16 @@ export default function CPUScreen() {
   useEffect(() => {
     console.log("Initial params:", params);
     if (params.socket || params.ramType) {
-      postCPU();
+      postMOBO();
     } else {
-      getCPU();
+      getMOBO();
     }
   }, []);
 
   const handleNameSearch = async () => {
     try {
-      setCPUs(null);
-      const response = await fetch(API_URL + "/processors/filters", {
+      setMOBOs(null);
+      const response = await fetch(API_URL + "/motherboards/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +148,7 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
+      setMOBOs(data.motherboards);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -148,11 +158,11 @@ export default function CPUScreen() {
 
   const handleSortChange = async (type, direction) => {
     try {
-      setCPUs(null);
+      setMOBOs(null);
       const params =
         type === "price" ? { priceSort: direction } : { ratingSort: direction };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/motherboards/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +174,7 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
+      setMOBOs(data.motherboards);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -174,17 +184,19 @@ export default function CPUScreen() {
 
   const handleAdvancedSearch = async () => {
     try {
-      setCPUs(null);
+      setMOBOs(null);
       const filters = {
         ...(minPrice && { minPrice }),
         ...(maxPrice && { maxPrice }),
         ...(selectedSocket && { socket: selectedSocket }),
+        ...(selectedChipset && { chipset: selectedChipset }),
         ...(selectedRamType && { ramType: selectedRamType }),
+        ...(selectedFormFactor && { formFactor: selectedFormFactor }),
         ...(minRating && { minRating }),
         ...(maxRating && { maxRating }),
       };
 
-      const response = await fetch(API_URL + "/processors/filters", {
+      const response = await fetch(API_URL + "/motherboards/filters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,9 +208,11 @@ export default function CPUScreen() {
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCPUs(data.processors);
+      setMOBOs(data.motherboards);
       setSockets(data.sockets);
+      setChipsets(data.chipsets);
       setRamTypes(data.ramTypes);
+      setFormFactors(data.formFactors);
       toggleFilters();
     } catch (err) {
       setError(err.message);
@@ -207,15 +221,17 @@ export default function CPUScreen() {
   };
 
   const handleReset = () => {
-    setCPUs(null);
+    setMOBOs(null);
     setNameFilter("");
     setMinPrice("");
     setMaxPrice("");
     setSelectedSocket("");
+    setSelectedChipset("");
     setSelectedRamType("");
+    setSelectedFormFactor("");
     setMinRating("");
     setMaxRating("");
-    getCPU().then(() => {
+    getMOBO().then(() => {
       toggleFilters();
     });
   };
@@ -256,7 +272,7 @@ export default function CPUScreen() {
           <View style={[{ width: "100%" }, styles.filterSection]}>
             <TextInput
               cursorColor={Colors.theme.orange}
-              placeholder="Enter a cpu brand or model"
+              placeholder="Enter a motherboard brand or model"
               value={nameFilter}
               onChangeText={setNameFilter}
               style={[
@@ -386,7 +402,6 @@ export default function CPUScreen() {
                 }
               />
               <View style={[styles.selectContainer]}>
-                {/* <Text style={styles.selectLabel}>Socket:</Text> */}
                 <View style={styles.pickerContainer}>
                   <Picker
                     selectedValue={selectedSocket}
@@ -403,8 +418,28 @@ export default function CPUScreen() {
                   </Picker>
                 </View>
               </View>
+              <View style={[styles.selectContainer]}>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedChipset}
+                    onValueChange={setSelectedChipset}
+                    style={styles.picker}
+                    onPressIn={() => setFocusedInput("chipset")}
+                    onEndEditing={() => setFocusedInput(null)}
+                    dropdownIconColor={Colors.theme.white}
+                  >
+                    <Picker.Item label="Chipset" value="" />
+                    {chipsets.map((chipset) => (
+                      <Picker.Item
+                        key={chipset}
+                        label={chipset}
+                        value={chipset}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
               <View style={styles.selectContainer}>
-                {/* <Text style={styles.selectLabel}>RAM Type:</Text> */}
                 <View style={styles.pickerContainer}>
                   <Picker
                     selectedValue={selectedRamType}
@@ -417,6 +452,27 @@ export default function CPUScreen() {
                     <Picker.Item label="RAM Type" value="" />
                     {ramTypes.map((type) => (
                       <Picker.Item key={type} label={type} value={type} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+              <View style={[styles.selectContainer]}>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedFormFactor}
+                    onValueChange={setSelectedFormFactor}
+                    style={styles.picker}
+                    onPressIn={() => setFocusedInput("formFactor")}
+                    onEndEditing={() => setFocusedInput(null)}
+                    dropdownIconColor={Colors.theme.white}
+                  >
+                    <Picker.Item label="Form Factor" value="" />
+                    {formFactors.map((formFactor) => (
+                      <Picker.Item
+                        key={formFactor}
+                        label={formFactor}
+                        value={formFactor}
+                      />
                     ))}
                   </Picker>
                 </View>
@@ -501,7 +557,7 @@ export default function CPUScreen() {
           color={Colors.theme.orange}
           style={styles.emptyIcon}
         />
-        <Text style={styles.emptyText}>No CPUs found</Text>
+        <Text style={styles.emptyText}>No Motherboards found</Text>
         <Text style={styles.emptySubText}>
           Try adjusting your search filters
         </Text>
@@ -514,13 +570,13 @@ export default function CPUScreen() {
       <View style={styles.container}>
         {error ? (
           <Text style={styles.error}>Error: {error}</Text>
-        ) : cpus ? (
+        ) : mobos ? (
           <>
             <AnimatedFlashList
               ref={scrollViewRef}
-              data={cpus}
+              data={mobos}
               estimatedItemSize={200}
-              renderItem={({ item }) => <SelectableCPU part={item} />}
+              renderItem={({ item }) => <SelectableMOBO part={item} />}
               contentContainerStyle={styles.scrollContent}
               onScroll={Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -537,7 +593,7 @@ export default function CPUScreen() {
         ) : (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.theme.orange} />
-            <Text style={styles.loadingText}>Loading CPU data...</Text>
+            <Text style={styles.loadingText}>Loading MOBO data...</Text>
           </View>
         )}
         <ScrollToTopButton

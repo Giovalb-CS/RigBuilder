@@ -430,7 +430,7 @@ export default function Configurator() {
                           pathname: "/(parts)/(cpu)",
                           params: {
                             socket: selectedMOBO?.socket,
-                            ramType: selectedMOBO?.ramType,
+                            ramType: selectedMOBO?.ram_type,
                           },
                         })
                       }
@@ -495,7 +495,7 @@ export default function Configurator() {
                 pathname: "/(parts)/(cpu)",
                 params: {
                   socket: selectedMOBO?.socket,
-                  ramType: selectedMOBO?.ramType,
+                  ramType: selectedMOBO?.ram_type,
                 },
               })
             }
@@ -544,6 +544,10 @@ export default function Configurator() {
                       onPress={() =>
                         router.push({
                           pathname: "/(parts)/(gpu)",
+                          params: {
+                            maxSlotWidth: selectedCase?.pcie_slots,
+                            maxLength: selectedCase?.gpu_lenght,
+                          },
                         })
                       }
                       style={styles.actionButton}
@@ -605,6 +609,10 @@ export default function Configurator() {
             onPress={() =>
               router.push({
                 pathname: "/(parts)/(gpu)",
+                params: {
+                  maxSlotWidth: selectedCase?.pcie_slots,
+                  maxLength: selectedCase?.gpu_lenght,
+                },
               })
             }
           />
@@ -652,6 +660,9 @@ export default function Configurator() {
                       onPress={() =>
                         router.push({
                           pathname: "/(parts)/(ram)",
+                          params: {
+                            ramType: selectedCPU?.ram_type,
+                          },
                         })
                       }
                       style={styles.actionButton}
@@ -710,11 +721,14 @@ export default function Configurator() {
           <PartsButton
             title="Add RAM"
             icon={require("../../assets/images/pc-parts-icons/ram.png")}
-            onPress={() =>
+            onPress={() => {
               router.push({
                 pathname: "/(parts)/(ram)",
-              })
-            }
+                params: {
+                  ramType: selectedCPU?.ram_type,
+                },
+              });
+            }}
           />
         );
 
@@ -760,6 +774,10 @@ export default function Configurator() {
                       onPress={() =>
                         router.push({
                           pathname: "/(parts)/(mobo)",
+                          params: {
+                            socket: selectedCPU?.socket,
+                            ramType: selectedRAM?.type,
+                          },
                         })
                       }
                       style={styles.actionButton}
@@ -821,6 +839,10 @@ export default function Configurator() {
             onPress={() =>
               router.push({
                 pathname: "/(parts)/(mobo)",
+                params: {
+                  socket: selectedCPU?.socket,
+                  ramType: selectedRAM?.type,
+                },
               })
             }
           />
@@ -976,6 +998,11 @@ export default function Configurator() {
                       onPress={() =>
                         router.push({
                           pathname: "/(parts)/(cooler)",
+                          params: {
+                            socket: selectedCPU?.socket,
+                            max_cooler_height: selectedCase?.cooler_height,
+                            radiator_size: selectedCase?.radiator_size,
+                          },
                         })
                       }
                       style={styles.actionButton}
@@ -1037,6 +1064,11 @@ export default function Configurator() {
             onPress={() =>
               router.push({
                 pathname: "/(parts)/(cooler)",
+                params: {
+                  socket: selectedCPU?.socket,
+                  max_cooler_height: selectedCase?.cooler_height,
+                  radiator_size: selectedCase?.radiator_size,
+                },
               })
             }
           />

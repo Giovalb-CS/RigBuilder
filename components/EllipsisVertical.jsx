@@ -41,7 +41,6 @@ const EllipsisVertical = () => {
           zIndex: 10,
         }}
         onPressIn={() => {
-          console.log("Ellipsis icon pressed!");
           toggleMenu();
         }}
       >
@@ -52,9 +51,6 @@ const EllipsisVertical = () => {
         visible={visible}
         animationType="fade"
         onRequestClose={toggleMenu}
-        onShow={() => {
-          console.log("Modal is now visible!");
-        }}
       >
         <TouchableOpacity style={styles.overlay} onPress={toggleMenu}>
           <View style={styles.menu}>
