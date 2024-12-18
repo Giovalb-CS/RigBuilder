@@ -1116,6 +1116,10 @@ export default function Configurator() {
                       onPress={() =>
                         router.push({
                           pathname: "/(parts)/(psu)",
+                          params: {
+                            minWattage: tdp,
+                            maxLength: selectedCase?.psu_lenght,
+                          },
                         })
                       }
                       style={styles.actionButton}
@@ -1177,6 +1181,10 @@ export default function Configurator() {
             onPress={() =>
               router.push({
                 pathname: "/(parts)/(psu)",
+                params: {
+                  minWattage: tdp,
+                  maxLenght: selectedCase?.psu_lenght,
+                },
               })
             }
           />
@@ -1224,6 +1232,14 @@ export default function Configurator() {
                       onPress={() =>
                         router.push({
                           pathname: "/(parts)/(case)",
+                          params: {
+                            minCoolerHeight: selectedCooler?.cooler_height,
+                            minRadiatorSize: selectedCooler?.radiator_size,
+                            minGPULength: selectedGPU?.lenght,
+                            formFactor: selectedMOBO?.form_factor,
+                            minPSULength: selectedPSU?.lenght,
+                            minPCIeSlots: selectedGPU?.slot_width * gpuQuantity,
+                          },
                         })
                       }
                       style={styles.actionButton}
@@ -1285,6 +1301,14 @@ export default function Configurator() {
             onPress={() =>
               router.push({
                 pathname: "/(parts)/(case)",
+                params: {
+                  minCoolerHeight: selectedCooler?.cooler_height,
+                  minRadiatorSize: selectedCooler?.radiator_size,
+                  minGPULenght: selectedGPU?.lenght,
+                  formFactor: selectedMOBO?.form_factor,
+                  minPSULenght: selectedPSU?.lenght,
+                  minPCIeSlots: selectedGPU?.slot_width * gpuQuantity,
+                },
               })
             }
           />
