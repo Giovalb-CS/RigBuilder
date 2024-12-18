@@ -38,7 +38,9 @@ export default function CoolerScreen() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [selectedSocket, setSelectedSocket] = useState(params.socket || "");
-  const [selectedRadiatorSize, setSelectedRadiatorSize] = useState("");
+  const [selectedRadiatorSize, setSelectedRadiatorSize] = useState(
+    params.radiator_size || ""
+  );
   const [minCoolerHeight, setMinCoolerHeight] = useState("");
   const [maxCoolerHeight, setMaxCoolerHeight] = useState("");
   const [minRating, setMinRating] = useState("");

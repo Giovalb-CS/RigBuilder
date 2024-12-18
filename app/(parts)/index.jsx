@@ -1000,7 +1000,7 @@ export default function Configurator() {
                           pathname: "/(parts)/(cooler)",
                           params: {
                             socket: selectedCPU?.socket,
-                            max_cooler_height: selectedCase?.cooler_height,
+                            max_cooler_height: selectedCase?.max_cooler_height,
                             radiator_size: selectedCase?.radiator_size,
                           },
                         })
@@ -1066,7 +1066,7 @@ export default function Configurator() {
                 pathname: "/(parts)/(cooler)",
                 params: {
                   socket: selectedCPU?.socket,
-                  max_cooler_height: selectedCase?.cooler_height,
+                  max_cooler_height: selectedCase?.max_cooler_height,
                   radiator_size: selectedCase?.radiator_size,
                 },
               })
@@ -1118,7 +1118,7 @@ export default function Configurator() {
                           pathname: "/(parts)/(psu)",
                           params: {
                             minWattage: tdp,
-                            maxLength: selectedCase?.psu_lenght,
+                            maxLenght: selectedCase?.psu_lenght,
                           },
                         })
                       }
@@ -1235,9 +1235,9 @@ export default function Configurator() {
                           params: {
                             minCoolerHeight: selectedCooler?.cooler_height,
                             minRadiatorSize: selectedCooler?.radiator_size,
-                            minGPULength: selectedGPU?.lenght,
+                            minGPULenght: selectedGPU?.lenght,
                             formFactor: selectedMOBO?.form_factor,
-                            minPSULength: selectedPSU?.lenght,
+                            minPSULenght: selectedPSU?.lenght,
                             minPCIeSlots: selectedGPU?.slot_width * gpuQuantity,
                           },
                         })

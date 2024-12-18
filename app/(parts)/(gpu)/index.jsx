@@ -38,7 +38,7 @@ export default function GPUScreen() {
   const [maxPrice, setMaxPrice] = useState("");
   const [selectedMemoryType, setSelectedMemoryType] = useState("");
   const [maxSlotWidth, setMaxSlotWidth] = useState(params.maxSlotWidth || "");
-  const [maxLenght, setMaxLenght] = useState(params.maxLenght || "");
+  const [maxLenght, setMaxLenght] = useState(params.maxLength || "");
   const [minRating, setMinRating] = useState("");
   const [maxRating, setMaxRating] = useState("");
 
@@ -114,7 +114,7 @@ export default function GPUScreen() {
 
   useEffect(() => {
     console.log("Initial params:", params);
-    if (params.maxSlotWidth || params.maxLenght) {
+    if (params.maxSlotWidth || params.maxLength) {
       postGPU();
     } else {
       getGPU();
