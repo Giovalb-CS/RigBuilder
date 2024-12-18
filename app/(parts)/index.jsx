@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -1315,6 +1315,80 @@ export default function Configurator() {
         );
     }
   };
+
+  // Calcolo prezzo
+  const calculatePrice = useCallback(() => {
+    const cpuTotal = selectedCPU ? selectedCPU.price * cpuQuantity : 0,
+      gpuTotal = selectedGPU ? selectedGPU.price * gpuQuantity : 0,
+      ramTotal = selectedRAM ? selectedRAM.price * ramQuantity : 0,
+      moboTotal = selectedMOBO ? selectedMOBO.price * moboQuantity : 0,
+      ssdTotal = selectedSSD ? selectedSSD.price * ssdQuantity : 0,
+      coolerTotal = selectedCooler ? selectedCooler.price * coolerQuantity : 0,
+      psuTotal = selectedPSU ? selectedPSU.price * psuQuantity : 0,
+      caseTotal = selectedCase ? selectedCase.price * caseQuantity : 0;
+
+    const total =
+      cpuTotal +
+      gpuTotal +
+      ramTotal +
+      moboTotal +
+      ssdTotal +
+      coolerTotal +
+      psuTotal +
+      caseTotal;
+
+    setPrice(total.toFixed(2));
+  }, [
+    selectedCPU,
+    cpuQuantity,
+    selectedGPU,
+    gpuQuantity,
+    selectedRAM,
+    ramQuantity,
+    selectedMOBO,
+    moboQuantity,
+    selectedSSD,
+    ssdQuantity,
+    selectedCooler,
+    coolerQuantity,
+    selectedPSU,
+    psuQuantity,
+    selectedCase,
+    caseQuantity,
+  ]);
+  useEffect(() => {
+    calculatePrice();
+  }, [calculatePrice]);
+
+  // Calcolo TDP
+  const calculateTDP = useCallback(() => {
+    const cpuTDP = selectedCPU ? selectedCPU.tdp * cpuQuantity : 0,
+      gpuTDP = selectedGPU ? selectedGPU.tdp * gpuQuantity : 0,
+      ramTDP = selectedRAM ? selectedRAM.tdp * ramQuantity : 0,
+      moboTDP = selectedMOBO ? selectedMOBO.tdp * moboQuantity : 0,
+      ssdTDP = selectedSSD ? selectedSSD.tdp * ssdQuantity : 0,
+      coolerTDP = selectedCooler ? selectedCooler.tdp * coolerQuantity : 0;
+
+    const total = cpuTDP + gpuTDP + ramTDP + moboTDP + ssdTDP + coolerTDP;
+
+    setTdp(total);
+  }, [
+    selectedCPU,
+    cpuQuantity,
+    selectedGPU,
+    gpuQuantity,
+    selectedRAM,
+    ramQuantity,
+    selectedMOBO,
+    moboQuantity,
+    selectedSSD,
+    ssdQuantity,
+    selectedCooler,
+    coolerQuantity,
+  ]);
+  useEffect(() => {
+    calculateTDP();
+  }, [calculateTDP]);
 
   return (
     <SafeAreaView style={commonStyles.safeAreaView}>
