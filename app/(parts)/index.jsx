@@ -1390,6 +1390,29 @@ export default function Configurator() {
     calculateTDP();
   }, [calculateTDP]);
 
+  // Calcolo compatibilità
+  const calculateCompatibility = useCallback(() => {}, [
+    selectedCPU,
+    selectedGPU,
+    selectedRAM,
+    selectedMOBO,
+    selectedSSD,
+    selectedCooler,
+    selectedPSU,
+    selectedCase,
+    cpuQuantity,
+    gpuQuantity,
+    ramQuantity,
+    moboQuantity,
+    ssdQuantity,
+    coolerQuantity,
+    psuQuantity,
+    caseQuantity,
+  ]);
+  // useEffect(() => {
+  //   calculateCompatibility();
+  // }, [calculateCompatibility]);
+
   return (
     <SafeAreaView style={commonStyles.safeAreaView}>
       <View style={styles.container}>

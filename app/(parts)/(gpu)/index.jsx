@@ -106,6 +106,7 @@ export default function GPUScreen() {
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setGPUs(data.gpus);
+      setMemoryTypes(data.memoryTypes);
     } catch (err) {
       setError(err.message);
       console.error("Error applying advanced filters:", err);
@@ -196,6 +197,7 @@ export default function GPUScreen() {
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setGPUs(data.gpus);
+      setMemoryTypes(data.memoryTypes);
       toggleFilters();
     } catch (err) {
       setError(err.message);
