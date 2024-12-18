@@ -1623,8 +1623,11 @@ const styles = StyleSheet.create({
   },
   buildStatsText: {
     color: Colors.theme.white,
-    fontSize: 16,
+    fontSize: 17,
     fontFamily: "RigBuilderFont",
+    textShadowColor: "rgba(0, 0, 0, 0.432)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 20,
   },
   quantityContainer: {
     flexDirection: "row",
