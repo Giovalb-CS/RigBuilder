@@ -47,6 +47,12 @@ export default function AboutScreen() {
             hardware components, keeping track of price, power consumption and
             compatibility between hardware components.
           </Text>
+          <Text style={styles.aboutText}>
+            The main goal is to help beginners take their first steps into PC
+            building. We guide users through component selection while
+            automatically checking compatibility, making the complex world of PC
+            hardware more approachable for newcomers.
+          </Text>
 
           <Text style={styles.subHeader}>
             The features offered by the app include:
@@ -58,13 +64,10 @@ export default function AboutScreen() {
             </Text>
             <Text style={styles.bulletPoint}>• Saving configurations</Text>
             <Text style={styles.bulletPoint}>
-              • Monitoring component prices
-            </Text>
-            <Text style={styles.bulletPoint}>
               • Checking component compatibility
             </Text>
             <Text style={styles.bulletPoint}>
-              • Calculating power consumption
+              • Calculating total build power consumption and price
             </Text>
             <Text style={styles.bulletPoint}>
               • Sharing configurations via scroll capture
@@ -88,13 +91,8 @@ export default function AboutScreen() {
           <Text style={styles.aboutText}>
             The data displayed in the app is fetched from the server via
             endpoints of the REST API. The server also hosts the administrator
-            dashboard for managing the hardware components. Originally, data was
-            fetched from PCPartPicker website via some python web scraper
-            scripts. There were some problems with the scrapers, so the scripts
-            were modified to fetch the correct informations to save into the
-            server database. Web scraping is not illegal, but it often violates
-            the terms of service of the website being scraped, PCPartPicker in
-            this case. RigBuilder is not affiliated with PCPartPicker.
+            dashboard for managing the hardware components. The data is obtained
+            from various web sources via some python web scraper scripts.
           </Text>
 
           <Text style={styles.paragraphTitle}>Project context</Text>
@@ -121,8 +119,8 @@ export default function AboutScreen() {
             </Text>
             <Text style={styles.bulletPoint}>
               • More component types and peripherals, such as monitors, audio
-              cards, network cards, monitors, mouses, keyboards, custom water
-              loops, etc...
+              cards, network cards, mouses, keyboards, custom water loops,
+              etc...
             </Text>
             <Text style={styles.bulletPoint}>
               • Integration and collaborations with online or local stores to
@@ -249,7 +247,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   icon: {
-    alignItems: "left",
     paddingLeft: 15,
   },
   aboutText: {
