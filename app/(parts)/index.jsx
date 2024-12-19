@@ -661,7 +661,8 @@ export default function Configurator() {
                         router.push({
                           pathname: "/(parts)/(ram)",
                           params: {
-                            ramType: selectedCPU?.ram_type,
+                            ramType:
+                              selectedCPU?.ram_type || selectedMOBO?.ram_type,
                           },
                         })
                       }
@@ -725,7 +726,7 @@ export default function Configurator() {
               router.push({
                 pathname: "/(parts)/(ram)",
                 params: {
-                  ramType: selectedCPU?.ram_type,
+                  ramType: selectedCPU?.ram_type || selectedMOBO?.ram_type,
                 },
               });
             }}
@@ -776,7 +777,7 @@ export default function Configurator() {
                           pathname: "/(parts)/(mobo)",
                           params: {
                             socket: selectedCPU?.socket,
-                            ramType: selectedRAM?.type,
+                            ramType: selectedRAM?.type || selectedCPU?.ram_type,
                           },
                         })
                       }
@@ -841,7 +842,7 @@ export default function Configurator() {
                 pathname: "/(parts)/(mobo)",
                 params: {
                   socket: selectedCPU?.socket,
-                  ramType: selectedRAM?.type,
+                  ramType: selectedRAM?.type || selectedCPU?.ram_type,
                 },
               })
             }
@@ -1391,7 +1392,242 @@ export default function Configurator() {
   }, [calculateTDP]);
 
   // Calcolo compatibilità
-  const calculateCompatibility = useCallback(() => {}, [
+  const calculateCompatibility = useCallback(() => {
+    const issues = [];
+
+    // CPU-RAM
+    if (selectedCPU && selectedRAM) {
+      if (selectedCPU.ram_type !== selectedRAM.type) {
+        if (
+          (selectedCPU.ram_type === "DDR5" && selectedRAM.type === "DDR4") ||
+          (selectedCPU.ram_type === "DDR5" && selectedRAM.type === "DDR3") ||
+          (selectedCPU.ram_type === "DDR4" && selectedRAM.type === "DDR3")
+        ) {
+          issues.push(
+            "The CPU supports a higher RAM type than the one selected, it's still compatible but you could get better performance with a higher RAM type."
+          );
+        } else if (
+          (selectedCPU.ram_type === "DDR4" && selectedRAM.type === "DDR5") ||
+          (selectedCPU.ram_type === "DDR3" && selectedRAM.type === "DDR5") ||
+          (selectedCPU.ram_type === "DDR3" && selectedRAM.type === "DDR4")
+        ) {
+          issues.push(
+            "The RAM selected is not supported by the CPU, please choose a different one."
+          );
+        } else {
+          issues.push(
+            "The CPU and RAM selected have different RAM types, please choose a different one."
+          );
+        }
+      }
+    }
+
+    // CPU-MOBO
+    if (selectedCPU && selectedMOBO) {
+      if (selectedCPU.ram_type !== selectedMOBO.ram_type) {
+        if (
+          (selectedCPU.ram_type === "DDR5" &&
+            selectedMOBO.ram_type === "DDR4") ||
+          (selectedCPU.ram_type === "DDR5" &&
+            selectedMOBO.ram_type === "DDR3") ||
+          (selectedCPU.ram_type === "DDR4" && selectedMOBO.ram_type === "DDR3")
+        ) {
+          issues.push(
+            "The CPU supports a higher RAM type than the motherboard. Using the current RAM type is compatible, but it will operate at the lower motherboard's speed."
+          );
+        } else if (
+          (selectedCPU.ram_type === "DDR4" &&
+            selectedMOBO.ram_type === "DDR5") ||
+          (selectedCPU.ram_type === "DDR3" &&
+            selectedMOBO.ram_type === "DDR5") ||
+          (selectedCPU.ram_type === "DDR3" && selectedMOBO.ram_type === "DDR4")
+        ) {
+          issues.push(
+            "The motherboard supports a higher RAM type than the CPU, please choose a different one."
+          );
+        } else {
+          issues.push(
+            "The CPU and motherboard selected have different RAM types, please choose a different one."
+          );
+        }
+      }
+
+      if (selectedCPU.socket !== selectedMOBO.socket) {
+        issues.push(
+          `CPU socket ${selectedCPU.socket} is not compatible with motherboard socket ${selectedMOBO.socket}`
+        );
+      }
+    }
+
+    // CPU-Cooler
+    if (selectedCPU && selectedCooler) {
+      const coolerSockets = selectedCooler.socket.split("/");
+      if (!coolerSockets.includes(selectedCPU.socket)) {
+        issues.push(
+          `The selected cooler is not compatible with the CPU socket ${selectedCPU.socket}`
+        );
+      }
+    }
+
+    // GPU-MOBO
+    if (selectedGPU && selectedMOBO) {
+      if (selectedMOBO.pcie_x16_slot < gpuQuantity) {
+        issues.push(
+          `The motherboard has only ${selectedMOBO.pcie_x16_slot} PCIe x16 slots, while you have selected ${gpuQuantity} GPUs.`
+        );
+      }
+    }
+
+    // RAM-MOBO
+    if (selectedRAM && selectedMOBO) {
+      if (selectedRAM.type !== selectedMOBO.ram_type) {
+        if (
+          (selectedRAM.type === "DDR5" && selectedMOBO.ram_type === "DDR4") ||
+          (selectedRAM.type === "DDR5" && selectedMOBO.ram_type === "DDR3") ||
+          (selectedRAM.type === "DDR4" && selectedMOBO.ram_type === "DDR3")
+        ) {
+          issues.push(
+            "The motherboard supports a lower RAM type than the one selected, it's still compatible but you could get better performance."
+          );
+        } else if (
+          (selectedRAM.type === "DDR4" && selectedMOBO.ram_type === "DDR5") ||
+          (selectedRAM.type === "DDR3" && selectedMOBO.ram_type === "DDR5") ||
+          (selectedRAM.type === "DDR3" && selectedMOBO.ram_type === "DDR4")
+        ) {
+          issues.push(
+            "The motherboard supports a higher RAM type than the one selected, it's still compatible but you could get better performance."
+          );
+        } else {
+          issues.push(
+            "The RAM and motherboard selected have different types, please choose a different one."
+          );
+        }
+      }
+
+      if (selectedRAM.clock > selectedMOBO.ram_max_speed) {
+        issues.push(
+          `The selected RAM has a higher clock speed than the motherboard supports. The RAM will operate at the motherboard's maximum speed.`
+        );
+      }
+      // else if (selectedRAM.clock < selectedMOBO.ram_max_speed) {
+      //   issues.push(
+      //     `The selected RAM has a lower clock speed than the motherboard supports. The RAM will operate at its maximum speed.`
+      //   );
+      // }
+
+      const ramRegex = /(\d+)\s*x\s*(\d+)\s*GB/i;
+      let match = selectedRAM.name.match(ramRegex);
+      let dimms = 0;
+      let capacityPerDimm = 0;
+      let totalRamCapacity = 0;
+      if (match) {
+        dimms = parseInt(match[1], 10);
+        capacityPerDimm = parseInt(match[2], 10);
+        totalRamCapacity = dimms * capacityPerDimm * ramQuantity;
+
+        if (totalRamCapacity > selectedMOBO.ram_max) {
+          issues.push(
+            `The total RAM capacity exceeds the motherboard's maximum capacity of ${selectedMOBO.ram_max}GB.`
+          );
+        }
+
+        if (dimms * ramQuantity > selectedMOBO.ram_slot) {
+          issues.push(
+            `The motherboard has only ${
+              selectedMOBO.ram_slot
+            } RAM slots, while you have selected ${
+              dimms * ramQuantity
+            } DIMMs per RAM.`
+          );
+        }
+      } else {
+        console.warn("Could not parse RAM information");
+      }
+    }
+
+    // MOBO-SSD
+    if (selectedMOBO && selectedSSD) {
+      if (selectedMOBO.m2_slot < ssdQuantity) {
+        issues.push(
+          `The motherboard has only ${selectedMOBO.m2_slot} M.2 slots, while you have selected ${ssdQuantity} SSDs.`
+        );
+      }
+    }
+
+    // MOBO-Cooler
+    if (selectedMOBO && selectedCooler) {
+      const coolerSockets = selectedCooler.socket.split("/");
+      if (!coolerSockets.includes(selectedMOBO.socket)) {
+        issues.push(
+          `The selected cooler is not compatible with the motherboard socket ${selectedMOBO.socket}`
+        );
+      }
+    }
+
+    // MOBO-Case
+    if (selectedMOBO && selectedCase) {
+      const caseFormFactors = selectedCase.form_factor.split("/");
+      if (!caseFormFactors.includes(selectedMOBO.form_factor)) {
+        issues.push(
+          `The selected case does not support the motherboard form factor ${selectedMOBO.form_factor}`
+        );
+      }
+    }
+
+    // PSU-Build
+    if (selectedPSU) {
+      if (selectedPSU.wattage < tdp) {
+        issues.push(
+          `The total power consumption of the build exceeds the PSU's wattage of ${selectedPSU.wattage}W. Consider choosing a higher wattage PSU.`
+        );
+      }
+    }
+
+    // Case-GPU
+    if (selectedCase && selectedGPU) {
+      if (selectedCase.pcie_slots < gpuQuantity) {
+        issues.push(
+          `The case has only ${selectedCase.pcie_slots} PCIe slots, while you have selected ${gpuQuantity} GPUs.`
+        );
+      }
+
+      if (selectedCase.gpu_lenght < selectedGPU.lenght) {
+        issues.push(
+          `The selected GPU is too long for the case, consider choosing a shorter one.`
+        );
+      }
+    }
+
+    // Case-PSU
+    if (selectedCase && selectedPSU) {
+      if (selectedCase.psu_lenght < selectedPSU.lenght) {
+        issues.push(
+          `The selected PSU is too long for the case, consider choosing a shorter one.`
+        );
+      }
+    }
+
+    // Case-Cooler
+    if (selectedCase && selectedCooler) {
+      if (selectedCase.max_cooler_height < selectedCooler.cooler_height) {
+        issues.push(
+          `The selected cooler is too tall for the case, consider choosing a shorter one.`
+        );
+      }
+
+      if (selectedCase.radiator_size < selectedCooler.radiator_size) {
+        issues.push(
+          `The selected cooler's radiator is too big for the case, consider choosing a smaller one.`
+        );
+      }
+    }
+
+    setCompatibility(
+      issues.length > 0
+        ? issues.map((issue) => `• ${issue}`).join("\n")
+        : "Compatible"
+    );
+  }, [
     selectedCPU,
     selectedGPU,
     selectedRAM,
@@ -1409,9 +1645,9 @@ export default function Configurator() {
     psuQuantity,
     caseQuantity,
   ]);
-  // useEffect(() => {
-  //   calculateCompatibility();
-  // }, [calculateCompatibility]);
+  useEffect(() => {
+    calculateCompatibility();
+  }, [calculateCompatibility]);
 
   return (
     <SafeAreaView style={commonStyles.safeAreaView}>
@@ -1432,17 +1668,37 @@ export default function Configurator() {
               <View style={styles.buildStatsContainer}>
                 <Text style={styles.buildStatsText}>Price: €{price}</Text>
                 <Text style={styles.buildStatsText}>Power: {tdp}W</Text>
-                <Text
-                  style={[
-                    styles.buildStatsText,
-                    {
-                      color:
-                        compatibility === "Compatible" ? "#51ff00" : "#ff3300",
-                    },
-                  ]}
-                >
-                  {compatibility}
-                </Text>
+                {!shareMode ? (
+                  <Text
+                    style={[
+                      styles.buildStatsText,
+                      {
+                        color:
+                          compatibility === "Compatible"
+                            ? "#51ff00"
+                            : "#ff3300",
+                      },
+                    ]}
+                  >
+                    {compatibility}
+                  </Text>
+                ) : (
+                  <Text
+                    style={[
+                      styles.buildStatsText,
+                      {
+                        color:
+                          compatibility === "Compatible"
+                            ? "#51ff00"
+                            : "#ff3300",
+                      },
+                    ]}
+                  >
+                    {compatibility === "Compatible"
+                      ? "Compatible"
+                      : "Compatibility issues"}
+                  </Text>
+                )}
               </View>
               {!shareMode && (
                 <>
@@ -1520,17 +1776,37 @@ export default function Configurator() {
               <View style={styles.buildStatsContainer}>
                 <Text style={styles.buildStatsText}>Price: €{price}</Text>
                 <Text style={styles.buildStatsText}>Power: {tdp}W</Text>
-                <Text
-                  style={[
-                    styles.buildStatsText,
-                    {
-                      color:
-                        compatibility === "Compatible" ? "#51ff00" : "#ff3300",
-                    },
-                  ]}
-                >
-                  {compatibility}
-                </Text>
+                {!shareMode ? (
+                  <Text
+                    style={[
+                      styles.buildStatsText,
+                      {
+                        color:
+                          compatibility === "Compatible"
+                            ? "#51ff00"
+                            : "#ff3300",
+                      },
+                    ]}
+                  >
+                    {compatibility}
+                  </Text>
+                ) : (
+                  <Text
+                    style={[
+                      styles.buildStatsText,
+                      {
+                        color:
+                          compatibility === "Compatible"
+                            ? "#51ff00"
+                            : "#ff3300",
+                      },
+                    ]}
+                  >
+                    {compatibility === "Compatible"
+                      ? "Compatible"
+                      : "Compatibility issues"}
+                  </Text>
+                )}
               </View>
               {!shareMode && (
                 <>
@@ -1651,6 +1927,7 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.432)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 20,
+    lineHeight: 24,
   },
   quantityContainer: {
     flexDirection: "row",
