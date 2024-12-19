@@ -1239,7 +1239,9 @@ export default function Configurator() {
                             minGPULenght: selectedGPU?.lenght,
                             formFactor: selectedMOBO?.form_factor,
                             minPSULenght: selectedPSU?.lenght,
-                            minPCIeSlots: selectedGPU?.slot_width * gpuQuantity,
+                            minPCIeSlots:
+                              selectedGPU &&
+                              selectedGPU.slot_width * gpuQuantity,
                           },
                         })
                       }
@@ -1308,7 +1310,8 @@ export default function Configurator() {
                   minGPULenght: selectedGPU?.lenght,
                   formFactor: selectedMOBO?.form_factor,
                   minPSULenght: selectedPSU?.lenght,
-                  minPCIeSlots: selectedGPU?.slot_width * gpuQuantity,
+                  minPCIeSlots:
+                    selectedGPU && selectedGPU.slot_width * gpuQuantity,
                 },
               })
             }
