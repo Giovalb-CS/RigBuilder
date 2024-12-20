@@ -42,7 +42,7 @@
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE"
       ],
-      "networkSecurityConfig" : "./network_security_config.xml",
+      "networkSecurityConfig": "./network_security_config.xml",
       "icon": "./assets/images/RigBuilder_Logo_OS.png",
       "package": "com.rigbuilder.app"
     },
@@ -60,7 +60,12 @@
           "photosPermission": "Allow RigBuilder to save files to your device.",
           "savePhotosPermission": "Allow RigBuilder to save files to your device."
         }
-      ]
+      ],
+      ["expo-build-properties", {
+        "android": {
+          "usesCleartextTraffic": true
+        }
+      }]
     ],
     "experiments": {
       "typedRoutes": true
