@@ -3,7 +3,7 @@
     "name": "RigBuilder",
     "slug": "RigBuilder",
     "version": "1.0.0",
-    "package":"com.rigbuilder.app",
+    "package": "com.rigbuilder.app",
     "orientation": "default",
     "icon": "./assets/images/RigBuilder_Logo_OS.png",
     "scheme": "myapp",
@@ -20,11 +20,15 @@
     "android": {
       "navigationBarColor": "#252525",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/RigBuilder_Logo.png",
+        "foregroundImage": "./assets/images/RigBuilder_Logo_OS.png",
         "backgroundColor": "#000000"
       },
       "softwareKeyboardLayoutMode": "pan",
       "configChanges": [
+        "keyboard",
+        "keyboardHidden",
+        "orientation",
+        "screenSize",
         "keyboard",
         "keyboardHidden",
         "orientation",
@@ -34,9 +38,13 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.MANAGE_EXTERNAL_STORAGE",
-        "android.permission.MEDIA_LIBRARY"
+        "android.permission.MEDIA_LIBRARY",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
       ],
-      "icon": "./assets/images/RigBuilder_Logo_OS.png"
+      "networkSecurityConfig" : "./network_security_config.xml",
+      "icon": "./assets/images/RigBuilder_Logo_OS.png",
+      "package": "com.rigbuilder.app"
     },
     "web": {
       "bundler": "metro",
@@ -45,14 +53,27 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow RigBuilder to save files to your device.",
+          "savePhotosPermission": "Allow RigBuilder to save files to your device."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "API_URL": "http://192.168.1.9:8080/RigBuilder_webapp_project_war_exploded/api",
-      "API_KEY": "1P9N112129"
+      "API_KEY": "1P9N112129",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ae32a14e-dfea-49f7-952a-90dde27a4428"
+      }
     }
   }
 }

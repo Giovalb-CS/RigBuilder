@@ -38,9 +38,7 @@ export default function HomeScreen() {
       console.error("Error loading builds:", error);
     }
   };
-
-  // useEffect non funzionava, mentre useFocusEffect si per react navigation
-  useFocusEffect(
+  useEffect(
     useCallback(() => {
       loadBuilds();
     }, [])
