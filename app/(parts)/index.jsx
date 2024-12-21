@@ -23,6 +23,7 @@ import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BackHandler, ToastAndroid } from "react-native";
+import AutomaticConfigurator from "../../components/AutomaticConfigurator";
 
 export default function Configurator() {
   const { width, height } = useWindowDimensions();
@@ -1654,6 +1655,26 @@ export default function Configurator() {
     calculateCompatibility();
   }, [calculateCompatibility]);
 
+  // Reset quantità per autobuild
+  useEffect(() => {
+    const resetHandler = () => {
+      setCpuQuantity(1);
+      setGpuQuantity(1);
+      setRamQuantity(1);
+      setMoboQuantity(1);
+      setSsdQuantity(1);
+      setCoolerQuantity(1);
+      setPsuQuantity(1);
+      setCaseQuantity(1);
+    };
+
+    EventEmitter.on("quantitiesReset", resetHandler);
+
+    return () => {
+      EventEmitter.events["quantitiesReset"] = [];
+    };
+  }, []);
+
   return (
     <SafeAreaView style={commonStyles.safeAreaView}>
       <View style={styles.container}>
@@ -1853,6 +1874,7 @@ export default function Configurator() {
                 </>
               )}
             </View>
+            <AutomaticConfigurator />
             <View style={styles.buttonContainer}>
               {[
                 "CPU",

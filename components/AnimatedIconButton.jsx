@@ -11,6 +11,7 @@ const IconComponents = {
   Octicons: require("@expo/vector-icons/Octicons").default,
   FontAwesome: require("@expo/vector-icons/FontAwesome").default,
   FontAwesome5: require("@expo/vector-icons/FontAwesome5").default,
+  FontAwesome6: require("@expo/vector-icons/FontAwesome6").default,
   EvilIcons: require("@expo/vector-icons/EvilIcons").default,
 };
 
