@@ -11,7 +11,6 @@ import { useRouter } from "expo-router";
 import Colors from "../constants/Colors";
 import { FontAwesome5 } from "@expo/vector-icons";
 import AnimatedLogo from "../components/AnimatedLogo";
-import { LinearGradient } from "expo-linear-gradient";
 
 export default function AboutScreen() {
   const router = useRouter();
@@ -189,35 +188,11 @@ export default function AboutScreen() {
           </Text>
         </View>
       </ScrollView>
-      <LinearGradient
-        colors={[Colors.theme.darkgrey, "transparent"]}
-        style={styles.topFade}
-      />
-      <LinearGradient
-        colors={["transparent", Colors.theme.darkgrey]}
-        style={styles.bottomFade}
-      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  topFade: {
-    position: "absolute",
-    top: 9,
-    left: 0,
-    right: 0,
-    height: 20,
-    zIndex: 100,
-  },
-  bottomFade: {
-    position: "absolute",
-    bottom: 100,
-    left: 0,
-    right: 0,
-    height: 20,
-    zIndex: 100,
-  },
   animatedLogoContainer: {},
   social: {
     padding: 14,
@@ -237,8 +212,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.theme.darkgrey,
-    padding: 10,
-    paddingBottom: 100,
+    paddingHorizontal: 10,
+    paddingBottom: 60,
   },
   scrollView: {
     flex: 1,

@@ -1648,6 +1648,7 @@ export default function Configurator() {
     coolerQuantity,
     psuQuantity,
     caseQuantity,
+    tdp,
   ]);
   useEffect(() => {
     calculateCompatibility();
