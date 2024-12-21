@@ -177,7 +177,7 @@ export default function AboutScreen() {
           <AnimatedLogo width={300} height={300} />
         </View>
 
-        <View style={{ alignItems: "center" }}>
+        <View style={{ alignItems: "center", height: 100 }}>
           <Text
             style={{
               textAlign: "center",
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   bottomFade: {
     position: "absolute",
-    bottom: 55,
+    bottom: 100,
     left: 0,
     right: 0,
     height: 20,
@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.theme.darkgrey,
     padding: 10,
+    paddingBottom: 100,
   },
   scrollView: {
     flex: 1,

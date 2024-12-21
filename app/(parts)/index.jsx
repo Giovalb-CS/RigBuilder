@@ -110,6 +110,7 @@ export default function Configurator() {
       if (originalBuildId) {
         await AsyncStorage.removeItem(originalBuildId);
         console.log("Build deleted:", originalBuildId);
+        EventEmitter.emit("buildDeleted", null);
         router.back();
       }
     } catch (error) {

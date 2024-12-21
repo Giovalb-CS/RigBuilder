@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -9,7 +9,6 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import Colors from "../constants/Colors";
 import AnimatedIconButton from "../components/AnimatedIconButton";
@@ -17,10 +16,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
+import EventEmitter from "../utils/EventEmitter";
 
 export default function HomeScreen() {
   const router = useRouter();
   const [builds, setBuilds] = useState([]);
+  const previousBuilds = useRef([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Carico le build dall'AsyncStorage
   const loadBuilds = async () => {
@@ -28,44 +30,61 @@ export default function HomeScreen() {
       const keys = await AsyncStorage.getAllKeys();
       const buildKeys = keys.filter((key) => key.startsWith("@buildConfig_"));
       const builds = await AsyncStorage.multiGet(buildKeys);
-      setBuilds(
-        builds.map(([key, value]) => ({
-          id: key,
-          ...JSON.parse(value),
-        }))
-      );
+      const newBuilds = builds.map(([key, value]) => ({
+        id: key,
+        ...JSON.parse(value),
+      }));
+      previousBuilds.current = newBuilds;
+      setBuilds(newBuilds);
     } catch (error) {
       console.error("Error loading builds:", error);
+      setBuilds(previousBuilds.current);
     }
   };
   useEffect(
     useCallback(() => {
       loadBuilds();
+      EventEmitter.on("buildDeleted", loadBuilds);
+      return () => {
+        EventEmitter.events["buildDeleted"] = [];
+      };
     }, [])
   );
 
   // Componente per renderizzare ogni build
   const renderBuildItem = ({ item }) => {
+    if (!item?.components) {
+      console.warn("Invalid build item:", item);
+      return null;
+    } // Mitiga errore sulla cancellazione di una build quando l'app si usa troppo velocemente o quando ci sono errori nell'AsyncStorage
+
     const componentImages = Object.values(item.components)
       .filter((component) => component !== null)
       .map((component) => component.image_URL);
 
+    const handlePress = async () => {
+      if (isLoading) return;
+      setIsLoading(true);
+
+      const buildData = {
+        id: item.id,
+        name: item.name,
+        components: item.components,
+        quantities: item.quantities,
+      };
+
+      await new Promise((resolve) => setTimeout(resolve, 175));
+
+      router.push({
+        pathname: "/(parts)",
+        params: { buildData: JSON.stringify(buildData) },
+      });
+
+      setIsLoading(false);
+    };
+
     return (
-      <TouchableOpacity
-        style={pageStyles.buildItem}
-        onPress={() => {
-          const buildData = {
-            id: item.id,
-            name: item.name,
-            components: item.components,
-            quantities: item.quantities,
-          };
-          router.push({
-            pathname: "/(parts)",
-            params: { buildData: JSON.stringify(buildData) },
-          });
-        }}
-      >
+      <TouchableOpacity style={pageStyles.buildItem} onPress={handlePress}>
         <View style={styles.buildInfo}>
           <Text style={pageStyles.buildName}>{item.name}</Text>
           <Text style={pageStyles.buildDate}>
@@ -90,6 +109,13 @@ export default function HomeScreen() {
             />
           ))}
         </ScrollView>
+        <View>
+          <Text
+            style={[pageStyles.buildDate, { fontSize: 10, textAlign: "right" }]}
+          >
+            {item.id.split("@buildConfig_")[1]}
+          </Text>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -230,8 +256,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   componentImage: {
-    width: 30,
-    height: 30,
+    width: 28,
+    height: 28,
     marginRight: 10,
     backgroundColor: Colors.theme.white,
     borderRadius: 5,
