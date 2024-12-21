@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import Slider from "@react-native-community/slider";
 import Colors from "../constants/Colors";
 import { FontAwesome5, Octicons } from "@expo/vector-icons";
@@ -44,7 +50,6 @@ export default function AutomaticConfigurator() {
       const data = await response.json();
       console.log("Auto build result:", data);
 
-      // Update components
       if (data.processor) EventEmitter.emit("cpuSelected", data.processor);
       if (data.gpu) EventEmitter.emit("gpuSelected", data.gpu);
       if (data.ram) EventEmitter.emit("ramSelected", data.ram);
@@ -54,7 +59,6 @@ export default function AutomaticConfigurator() {
       if (data.psu) EventEmitter.emit("psuSelected", data.psu);
       if (data.casebox) EventEmitter.emit("caseSelected", data.casebox);
 
-      // Reset quantities
       EventEmitter.emit("quantitiesReset");
     } catch (err) {
       setError(err.message);
@@ -66,76 +70,91 @@ export default function AutomaticConfigurator() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Automatic Configurator</Text>
-
-      <View style={styles.sliderContainer}>
-        <Text style={styles.label}>Budget: €{budget}</Text>
-        <Slider
-          style={styles.slider}
-          minimumValue={900}
-          maximumValue={5000}
-          step={100}
-          value={budget}
-          onSlidingComplete={setBudget}
-          minimumTrackTintColor={Colors.theme.orange}
-          maximumTrackTintColor="#ffffff4d"
-          thumbTintColor={Colors.theme.orange}
-        />
-      </View>
-
-      <View style={styles.brandContainer}>
-        <Text style={styles.label}>Select CPU Brand:</Text>
-        <View style={styles.brandButtons}>
-          <Pressable
-            style={[
-              styles.brandButton,
-              cpuBrand === "amd" && styles.selectedBrand,
-            ]}
-            onPress={() => setCpuBrand("amd")}
-          >
-            <Octicons
-              name="cpu"
-              size={20}
-              color={cpuBrand === "amd" ? Colors.theme.orange : "#fff"}
-            />
-            <Text style={styles.brandText}>AMD</Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.brandButton,
-              cpuBrand === "intel" && styles.selectedBrand,
-            ]}
-            onPress={() => setCpuBrand("intel")}
-          >
-            <Octicons
-              name="cpu"
-              size={20}
-              color={cpuBrand === "intel" ? Colors.theme.orange : "#fff"}
-            />
-            <Text style={styles.brandText}>Intel</Text>
-          </Pressable>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.theme.orange} />
+          <Text style={styles.loadingText}>Building your PC...</Text>
         </View>
-      </View>
+      ) : (
+        <>
+          <Text style={styles.title}>Automatic Configurator</Text>
+          <View style={styles.sliderContainer}>
+            <Text style={styles.label}>Budget: €{budget}</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={900}
+              maximumValue={5000}
+              step={100}
+              value={budget}
+              onSlidingComplete={setBudget}
+              minimumTrackTintColor={Colors.theme.orange}
+              maximumTrackTintColor="#ffffff4d"
+              thumbTintColor={Colors.theme.orange}
+            />
+          </View>
 
-      <AnimatedIconButton
-        iconFamily="FontAwesome6"
-        iconName="screwdriver-wrench"
-        iconSize={23}
-        buttonText="Build"
-        onPress={handleAutoBuild}
-        style={styles.buildButton}
-        initialBackgroundColor="#ffffff00"
-        initialElevation={0}
-        initialBorderColor="#ffffff4d"
-      />
+          <View style={styles.brandContainer}>
+            <Text style={styles.label}>Select CPU Brand:</Text>
+            <View style={styles.brandButtons}>
+              <Pressable
+                style={[
+                  styles.brandButton,
+                  cpuBrand === "amd" && styles.selectedBrand,
+                ]}
+                onPress={() => setCpuBrand("amd")}
+              >
+                <Octicons
+                  name="cpu"
+                  size={20}
+                  color={cpuBrand === "amd" ? Colors.theme.orange : "#fff"}
+                />
+                <Text style={styles.brandText}>AMD</Text>
+              </Pressable>
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+              <Pressable
+                style={[
+                  styles.brandButton,
+                  cpuBrand === "intel" && styles.selectedBrand,
+                ]}
+                onPress={() => setCpuBrand("intel")}
+              >
+                <Octicons
+                  name="cpu"
+                  size={20}
+                  color={cpuBrand === "intel" ? Colors.theme.orange : "#fff"}
+                />
+                <Text style={styles.brandText}>Intel</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <AnimatedIconButton
+            iconFamily="FontAwesome6"
+            iconName="screwdriver-wrench"
+            iconSize={23}
+            buttonText="Build"
+            onPress={handleAutoBuild}
+            style={styles.buildButton}
+            initialBackgroundColor="#ffffff00"
+            initialElevation={0}
+            initialBorderColor="#ffffff4d"
+          />
+
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  loadingText: {
+    color: Colors.theme.white,
+    marginTop: 10,
+    fontSize: 16,
+    fontFamily: "RigBuilderFont",
+    textAlign: "center",
+  },
   errorText: {
     color: "#ff3300",
     marginTop: 10,
@@ -143,8 +162,10 @@ const styles = StyleSheet.create({
     fontFamily: "RigBuilderFont",
   },
   container: {
-    backgroundColor: "#ffffff0d",
-    borderRadius: 10,
+    backgroundColor: "transparent",
+    borderColor: "#ffffff4d",
+    borderWidth: 1,
+    borderRadius: 20,
     padding: 15,
     marginHorizontal: 10,
     marginVertical: 5,
@@ -154,6 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "RigBuilderFontBold",
     marginBottom: 15,
+    textAlign: "center",
   },
   sliderContainer: {
     marginBottom: 20,
@@ -195,7 +217,7 @@ const styles = StyleSheet.create({
   brandText: {
     color: Colors.theme.white,
     fontSize: 16,
-    fontFamily: "RigBuilderFont",
+    fontFamily: "RigBuilderFontBold",
   },
   buildButton: {
     width: "80%",

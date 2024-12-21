@@ -1876,6 +1876,7 @@ export default function Configurator() {
             </View>
             <AutomaticConfigurator />
             <View style={styles.buttonContainer}>
+              <Text style={styles.label}>Manual Configurator</Text>
               {[
                 "CPU",
                 "GPU",
@@ -1905,6 +1906,12 @@ export default function Configurator() {
 }
 
 const styles = StyleSheet.create({
+  label: {
+    color: Colors.theme.white,
+    fontSize: 18,
+    fontFamily: "RigBuilderFontBold",
+    textAlign: "center",
+  },
   deleteButton: {
     position: "absolute",
     right: 124,
