@@ -131,7 +131,7 @@ export default function AutomaticConfigurator() {
           <AnimatedIconButton
             iconFamily="FontAwesome6"
             iconName="screwdriver-wrench"
-            iconSize={23}
+            iconSize={18}
             buttonText="Build"
             onPress={handleAutoBuild}
             style={styles.buildButton}
@@ -220,10 +220,11 @@ const styles = StyleSheet.create({
     fontFamily: "RigBuilderFontBold",
   },
   buildButton: {
-    width: "80%",
+    width: "50%",
     borderRadius: 40,
-    height: 60,
+    height: 50,
     margin: "auto",
+    paddingTop: 5,
   },
   buildButtonText: {
     color: Colors.theme.white,
