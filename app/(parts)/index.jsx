@@ -24,6 +24,7 @@ import * as Sharing from "expo-sharing";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BackHandler, ToastAndroid } from "react-native";
 import AutomaticConfigurator from "../../components/AutomaticConfigurator";
+import InfoButton from "../../components/InfoButton";
 
 export default function Configurator() {
   const { width, height } = useWindowDimensions();
@@ -399,6 +400,9 @@ export default function Configurator() {
                     style={styles.image}
                     resizeMode="contain"
                   />
+                  {!isCapturing && (
+                    <InfoButton component={selectedCPU} type="CPU" />
+                  )}
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>
@@ -515,6 +519,9 @@ export default function Configurator() {
                     style={styles.image}
                     resizeMode="contain"
                   />
+                  {!isCapturing && (
+                    <InfoButton component={selectedGPU} type="GPU" />
+                  )}
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>
@@ -631,6 +638,9 @@ export default function Configurator() {
                     style={styles.image}
                     resizeMode="contain"
                   />
+                  {!isCapturing && (
+                    <InfoButton component={selectedRAM} type="RAM" />
+                  )}
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>
@@ -746,6 +756,9 @@ export default function Configurator() {
                     style={styles.image}
                     resizeMode="contain"
                   />
+                  {!isCapturing && (
+                    <InfoButton component={selectedMOBO} type="MOBO" />
+                  )}
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>
@@ -862,6 +875,9 @@ export default function Configurator() {
                     style={styles.image}
                     resizeMode="contain"
                   />
+                  {!isCapturing && (
+                    <InfoButton component={selectedSSD} type="SSD" />
+                  )}
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>
@@ -970,6 +986,9 @@ export default function Configurator() {
                     style={styles.image}
                     resizeMode="contain"
                   />
+                  {!isCapturing && (
+                    <InfoButton component={selectedCooler} type="Cooler" />
+                  )}
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>
@@ -1088,6 +1107,9 @@ export default function Configurator() {
                     style={styles.image}
                     resizeMode="contain"
                   />
+                  {!isCapturing && (
+                    <InfoButton component={selectedPSU} type="PSU" />
+                  )}
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>
@@ -1204,6 +1226,9 @@ export default function Configurator() {
                     style={styles.image}
                     resizeMode="contain"
                   />
+                  {!isCapturing && (
+                    <InfoButton component={selectedCase} type="Case" />
+                  )}
                 </View>
                 <View style={styles.componentInfo}>
                   <Text style={styles.componentName}>

@@ -71,6 +71,10 @@ export default function AboutScreen() {
             <Text style={styles.bulletPoint}>
               • Sharing configurations via scroll capture
             </Text>
+            <Text style={styles.bulletPoint}>
+              • Automatic build configurations based on a price budget and user
+              preferences
+            </Text>
           </View>
 
           <Text style={styles.paragraphTitle}>Privacy</Text>
@@ -109,10 +113,6 @@ export default function AboutScreen() {
             <Text style={styles.subHeader}>such as:</Text>
           </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletPoint}>
-              • Automatic build configurations based on a price budget and user
-              preferences
-            </Text>
             <Text style={styles.bulletPoint}>
               • Advanced configuration support, such as RAID and SLI
             </Text>
