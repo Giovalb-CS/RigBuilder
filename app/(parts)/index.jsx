@@ -1778,10 +1778,10 @@ export default function Configurator() {
                     style={styles.shareButton}
                   />
                   <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="save"
+                    iconFamily="MaterialCommunityIcons"
+                    iconName="bookmark-check"
                     buttonText=""
-                    iconSize={24}
+                    iconSize={32}
                     initialBackgroundColor="#ffffff00"
                     initialBorderColor="#ffffff4d"
                     initialElevation={0}
@@ -1886,10 +1886,10 @@ export default function Configurator() {
                     style={styles.shareButton}
                   />
                   <AnimatedIconButton
-                    iconFamily="FontAwesome5"
-                    iconName="save"
+                    iconFamily="MaterialCommunityIcons"
+                    iconName="bookmark-check"
                     buttonText=""
-                    iconSize={24}
+                    iconSize={32}
                     initialBackgroundColor="#ffffff00"
                     initialBorderColor="#ffffff4d"
                     initialElevation={0}

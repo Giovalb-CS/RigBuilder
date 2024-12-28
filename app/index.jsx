@@ -122,15 +122,17 @@ export default function HomeScreen() {
 
   const EmptyListComponent = () => (
     <View style={styles.emptyContainer}>
-      <FontAwesome5
-        name="plus"
-        size={50}
-        color={Colors.theme.orange}
-        style={styles.emptyIcon}
-      />
       <Text style={styles.emptyText}>There are no builds yet!</Text>
       <Text style={styles.emptySubText}>
-        Try creating a new one with the "+" button below.
+        Try creating a new one with the{"  "}
+        <FontAwesome5
+          name="plus"
+          size={20}
+          color={"#ffffff8a"}
+          style={styles.emptyIcon}
+        />
+        {"  "}
+        button below.
       </Text>
     </View>
   );
@@ -177,9 +179,9 @@ export default function HomeScreen() {
       </View>
 
       <AnimatedIconButton
-        iconFamily="Octicons"
-        iconName="diff-added"
-        buttonText="Build"
+        iconFamily="FontAwesome5"
+        iconName="plus"
+        buttonText="New Build"
         onPress={() => router.push("/(parts)")}
         style={pageStyles.fab}
       />
@@ -233,13 +235,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 32,
+    paddingVertical: 30,
   },
   emptyIcon: {
     marginBottom: 16,
   },
   emptyText: {
-    color: Colors.theme.white,
+    color: "#ffffff8a",
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 8,

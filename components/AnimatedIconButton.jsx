@@ -6,6 +6,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Colors from "../constants/Colors";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const IconComponents = {
   Octicons: require("@expo/vector-icons/Octicons").default,
@@ -13,6 +14,8 @@ const IconComponents = {
   FontAwesome5: require("@expo/vector-icons/FontAwesome5").default,
   FontAwesome6: require("@expo/vector-icons/FontAwesome6").default,
   EvilIcons: require("@expo/vector-icons/EvilIcons").default,
+  MaterialCommunityIcons: require("@expo/vector-icons/MaterialCommunityIcons")
+    .default,
 };
 
 export default function AnimatedIconButton({

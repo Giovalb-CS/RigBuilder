@@ -132,12 +132,9 @@ export default function AutomaticConfigurator() {
             iconFamily="FontAwesome6"
             iconName="screwdriver-wrench"
             iconSize={18}
-            buttonText="Build"
+            buttonText="Build!"
             onPress={handleAutoBuild}
             style={styles.buildButton}
-            initialBackgroundColor="#ffffff00"
-            initialElevation={0}
-            initialBorderColor="#ffffff4d"
           />
 
           {error && <Text style={styles.errorText}>{error}</Text>}
