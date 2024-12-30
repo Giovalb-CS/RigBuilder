@@ -10,7 +10,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/RigBuilder_Logo.png",
+      "image": "./assets/images/RigBuilder_Splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
