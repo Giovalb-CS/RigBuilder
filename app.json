@@ -20,7 +20,7 @@
     "android": {
       "navigationBarColor": "#252525",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/RigBuilder_Logo_OS.png",
+        "foregroundImage": "./assets/images/RigBuilder_Drawer.png",
         "backgroundColor": "#000000"
       },
       "softwareKeyboardLayoutMode": "pan",
@@ -71,7 +71,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_URL": "http://192.168.1.9:8080/RigBuilder_webapp_project_war_exploded/api",
+      "API_URL": "https://rigbuilder-d5a7cbg8b7d9g5hq.italynorth-01.azurewebsites.net/api",
       "API_KEY": "1P9N112129",
       "router": {
         "origin": false
